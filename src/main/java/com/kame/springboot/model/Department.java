@@ -7,19 +7,38 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
 @Entity
-@Table(name="department")
+@Table(name="department") // postgresだと、全て小文字なので合わせる
 public class Department {
 	
 	@Id
-	@Column
+	@Column(name = "departmentid", length = 20) // カラム名は、postgreSQL の全て小文字に合わせる
 	private String departmentId;
 	
 	
 	@NotEmpty
-	@Column(length = 50, nullable = false)
+	@Column(name = "departmentname", length = 20, nullable = false, unique = true) // カラム名は、postgreSQL の全て小文字に合わせる
 	private String departmentName;
 
+	
+	// コンストラクタ
+	public Department() {
+		super();
+		// TODO 自動生成されたコンストラクター・スタブ
+	}
+	
+	
 
+	// コンストラクタ
+	public Department(String departmentId, @NotEmpty String departmentName) {
+		super();
+		this.departmentId = departmentId;
+		this.departmentName = departmentName;
+	}
+
+
+
+
+	// アクセッサ
 	public String getDepartmentId() {
 		return departmentId;
 	}
