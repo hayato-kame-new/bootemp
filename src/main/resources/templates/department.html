@@ -28,14 +28,29 @@ padding: 5px; color:black; background:#f0f0f0;
 	<p th:text="${msg}"></p>
 	
 	<hr/>
+	<p th:unless="${departmentList}" th:text="現在登録されている部署はありません。">
 	<table>
-	<tr><th>部署ID</th><th>部署名</th><th></th></tr>
+	<tr><th>部署ID</th><th>部署名</th><th></th><th></th></tr>
 	<tr th:each="data : ${departmentList}" th:object="${data}">
 		<td th:text="*{departmentId}"></td>
 		<td th:text="*{departmentName}"></td>
-		<td ></td>
+		<td >
+			<!-- 編集画面を表示するDepartmentControllerのリクエストハンドラをよぶ -->
+			 <form method="get" action="/dep_add_edit" >
+				<!-- フォームでGETアクセスだと、hiddenタグで送ったものは、URL末尾の?以降のクエリー文字列で送られます。method="get"を省略しても、デフォルトでGETなので同じ -->
+				<input type="hidden" name="departmentId" th:value="*{departmentId}" />
+				<input type="hidden" name="departmentName" th:value="*{departmentName}" />
+				<input type="hidden" name="action" value="depEdit" />
+				<input type="submit" value="編集" /> 
+ 			</form>
+		</td>
+		<td >
+		
+		</td>
 	</tr>
 	</table>
+	
+	<a href="/dep_add_edit?action=depAdd"><button type="button">新規作成</button></a>
 
 
 
