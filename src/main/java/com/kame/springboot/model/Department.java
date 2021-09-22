@@ -18,7 +18,7 @@ public class Department {
 	@NotEmpty
 	@Column(name = "departmentname", length = 20, nullable = false, unique = true) // カラム名は、postgreSQL の全て小文字に合わせる
 	private String departmentName;
-
+	 // ここに unique　を付けても、同じ名前で登録できてしまうので、バリデーションをつけて、ユニークにする
 	
 	// コンストラクタ
 	public Department() {

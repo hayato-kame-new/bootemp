@@ -36,7 +36,8 @@ padding: 5px; color:black; background:#f0f0f0;
 		<input type="hidden" name="departmentId" th:value="*{departmentId}" />
 		<input type="hidden" name="action" th:value="${action}" />
 		<tr><td><label for="departmentName">部署名</label></td>
-			<td><input type="text" id="departmentName" name="departmentName" th:value="*{departmentName}" />
+			<td>
+				<input type="text" id="departmentName" name="departmentName" th:value="*{departmentName}" />
 			</td>
 		</tr>
 		

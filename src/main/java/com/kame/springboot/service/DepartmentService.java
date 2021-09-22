@@ -1,6 +1,7 @@
 package com.kame.springboot.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,8 +30,10 @@ public class DepartmentService {
 	private EntityManager entityManager;
 	
 	/**
+	 *  このメソッドだと、更新をした後に、更新したデータが一番後ろになってしまうため、使わない。
+	 *  PostgreSQL だと、order by departmentId を付けないと、順番が、更新されたのが一番最後の順になってします。
 	   * レコードを全件取得する。 リポジトリのメソッド自動生成について p248
-	   * @return
+	   * @return List<Department>
 	   */
 	@SuppressWarnings("unchecked")
 	public List<Department> findAllDepartmentData() { // 簡単なものはリポジトリの メソッド自動生成機能で
@@ -39,12 +42,15 @@ public class DepartmentService {
 	}
 	
 	/**
-	   * 保存 リポジトリのメソッド自動生成について p248
-	   * @return
+	 *  リポジトリの自動生成機能で作る、findAll()メソッドだと、更新をした後に、更新したデータが一番後ろになってしまうため、使わない。
+	 *  PostgreSQL だと、order by departmentId を付けないと、順番が、更新されたのが一番最後の順になってします。
+	   * レコードを全件取得する。 リポジトリのメソッド自動生成について p248
+	   * @return List<Department>
 	   */
-	public Department saveAndFlush(Department department) { // 簡単なものはリポジトリの メソッド自動生成機能で
+	@SuppressWarnings("unchecked")
+	public List<Department> findAllOrderByDepId() { // 簡単なものはリポジトリの メソッド自動生成機能で
 		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成
-		return departmentRepository.saveAndFlush(department);  
+		return departmentRepository.findByDepartmentIdIsNotNullOrderByDepartmentIdAsc();  
 	}
 	
 	// 複雑なものは、DAOを定義して利用しますが、DAOの代わりにサービスに定義して利用する
@@ -85,9 +91,22 @@ public class DepartmentService {
 			departmentGeneratedId = result;
 		}
 		return departmentGeneratedId;
-		
-
+	}
+	/**
+	 * 保存 リポジトリのメソッド自動生成について p248 リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
+	 * @return Department
+	 */
+	public Department saveAndFlushDepartmentData(Department department) { // 簡単なものはリポジトリの メソッド自動生成機能で
+		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成
+		return departmentRepository.saveAndFlush(department);  
 	}
 
-	
+	/**
+	 * 実際使ってないメソッド
+	 * 主キーから、エンティティを取得 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
+	 * @return Optional<Department>
+	 */
+	public Optional<Department> findByIdDepartmentData(String departmentId){
+		return departmentRepository.findById(departmentId);
+	}
 }
