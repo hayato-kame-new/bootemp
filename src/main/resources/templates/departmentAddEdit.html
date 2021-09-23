@@ -28,6 +28,8 @@ padding: 5px; color:black; background:#f0f0f0;
 	<hr/>
 	<p>新規と編集をするページ</p>
 	
+	<p th:text="${msg}" ></p>
+	
 <!-- 新規では、formModelには、空のインスタンスで、各フィールドは、各データ型の規定値が入ってる -->
 	
 	<form method="post" action="/dep_add_edit" th:object="${formModel}">
