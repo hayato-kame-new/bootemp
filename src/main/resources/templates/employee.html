@@ -33,10 +33,24 @@ padding: 5px; color:black; background:#f0f0f0;
 
 <table>
 	<tr><th>社員ID</th><th>名前</th><th></th><th></th></tr>
-	
-
+	<tr th:each="emp : ${employeeList}" th:object="${emp}">
+		<td th:text="*{employeeId}"></td>
+		<td th:text="*{name}"></td>
+		<td>
+			 <form method = "get" action = "/emp_add_edit" >
+			 	<input type="hidden" name="employeeId" th:value="*{employeeId}" >
+			 	<input type="hidden" name="action" th:value="edit" >
+			 	<input type="submit" value="編集" >
+			 </form>		
+		</td>
+		<td>
+		
+		</td>
+	</tr>
 </table>
 
+<!-- aリンクは、HTTPメソッドではGET URLパスの末尾?以降がクエリーパラメータとしてコントローラの対応するリクエストハンドラに送られる -->
+<a href="/emp_add_edit?action=add" ><button type="button">新規追加</button> </a>
 
 </body>
 </html>

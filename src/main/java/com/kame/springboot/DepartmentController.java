@@ -49,7 +49,7 @@ public class DepartmentController {
 	
 	
 	/**
-	 * 画面を表示する depNewEditリクエストハンドラ
+	 * 画面を表示する リクエストハンドラ
 	 * @param action
 	 * @param departmentId
 	 * @param departmentName
@@ -71,9 +71,12 @@ public class DepartmentController {
 			// 新規では、action だけが、GETだから、クエリー文字列で送られてきている。actionも、次へ送る
 		} else if (action.equals("depEdit")) {
 			// 編集のときには、"formModel"という変数には、フォームからのデータが入っているが、hiddenで送られているので、departmentの各フィールドは、最初に新規で送られたもの同じです
-			// 規定値になってるので、hiddenタグから送られたパラメータの値をセットします。			
-			department.setDepartmentId(departmentId);
-			department.setDepartmentName(departmentName);
+			// 規定値になってるので、hiddenタグから送られたパラメータの値をセットします。	
+			
+			
+			// この２行違います。employeeみたいなメソッドを作って、エンティティを検索してきて、それをaddObject("formModel", インスタンスの入った変数)としてください！！
+			department.setDepartmentId(departmentId); // 違う
+			department.setDepartmentName(departmentName); // 違う
 			}
 		mav.setViewName("departmentAddEdit");
 		mav.addObject("action", action);
