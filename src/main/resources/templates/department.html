@@ -45,7 +45,13 @@ padding: 5px; color:black; background:#f0f0f0;
  			</form>
 		</td>
 		<td >
-		
+			<!-- 削除には、プライマリーキーの値だけ必要です あと actionも送る -->
+			<form method="post" action="/dep_add_edit">
+				<!-- POSTで送る。POSTだと、リクエストボディにデータが入って送られる。フォームでは、method="post"を書かないと、デフォルトのGETになってしまう -->
+				<input type="hidden" name="departmentId" th:value="*{departmentId}" />
+				<input type="hidden" name="action" th:value="delete" />
+				<input type="submit" value="削除" />
+			</form>
 		</td>
 	</tr>
 	</table>

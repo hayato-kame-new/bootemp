@@ -1,10 +1,10 @@
 package com.kame.springboot.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -24,7 +24,8 @@ public class DepartmentService {
 	@Autowired
 	DepartmentRepository departmentRepository; // コンポーネント Beanとしてインスタンス生成される
 
-	// リポジトリには、限界がある
+	// リポジトリには、限界がある リポジトリのメソッド自動生成できないものは、idを使ったものです。今回は、departmentIdですので。
+	// DAOに書かずに、サービスに定義します。
 	// リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
 	@PersistenceContext  // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。 その他の場所には書けません。１箇所だけ
 	private EntityManager entityManager;
@@ -53,7 +54,8 @@ public class DepartmentService {
 		return departmentRepository.findByDepartmentIdIsNotNullOrderByDepartmentIdAsc();  
 	}
 	
-	// 複雑なものは、DAOを定義して利用しますが、DAOの代わりにサービスに定義して利用する
+	// 複雑なものは、DAOを定義して利用しますが、DAOの代わりにサービスに定義して利用する 
+	// リポジトリのメソッド自動生成機能は 一切使ってないので、リポジトリは関係ない
 	/**
 	   * 部署IDを生成する
 	   * @return departmentGeneratedId
@@ -85,9 +87,7 @@ public class DepartmentService {
 			String lastID = lastGetDepartment.getDepartmentId();
 			// 切り取る 数値変換 
 			int n = Integer.parseInt(lastID.substring(1, 3)) + 1 ;
-			System.out.println(n);
 			String result = String.format("D%02d", n);
-			System.out.println(result);
 			departmentGeneratedId = result;
 		}
 		return departmentGeneratedId;
@@ -102,11 +102,53 @@ public class DepartmentService {
 	}
 
 	/**
-	 * 実際使ってないメソッド
+	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
 	 * 主キーから、エンティティを取得 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
 	 * @return Optional<Department>
 	 */
-	public Optional<Department> findByIdDepartmentData(String departmentId){
-		return departmentRepository.findById(departmentId);
+//	public Optional<Department> findByIdDepartmentData(String departmentId){
+//		return departmentRepository.findById(departmentId);
+//	}
+	
+	/**
+	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
+	 * 主キーから、エンティティを削除 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
+	 * @return void
+	 */
+//	public void deleteByIdDepartmentData(String departmentId) {
+//		// 注意 戻り値はないので、 return 付けません。
+//		departmentRepository.deleteById(departmentId);		
+//	}
+
+	/**
+	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
+	 * エンティティを引数にして、エンティティを削除 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
+	 * @return void
+	 */
+//	public void deleteByEntityObject(Department department) {
+//		// TODO 自動生成されたメソッド・スタブ
+//		// 注意 戻り値はないので、 return 付けません。
+//				departmentRepository.deleteById(department);
+//	}
+	
+	
+	/**
+	 * DAOじゃなくてサービスを使って定義する
+	 * EntityManager　と Query　を使う。JPQLクエリー
+	 * @Column(name = departmentid)  にして置く必要がある カラム名を全て小文字の設定にしておく
+	 */
+	public boolean deleteJPQL(String departmentId) {
+		Query query = entityManager.createQuery("delete from Department where departmentid = :departmentId");
+		query.setParameter("departmentId", departmentId);
+		int result = query.executeUpdate(); // 成功したデータ数が返る 戻り値 int型
+		if(result != 1) { // 失敗
+			return false;
+		} 
+		return true;
 	}
+	
+	
+
+
+	
 }
