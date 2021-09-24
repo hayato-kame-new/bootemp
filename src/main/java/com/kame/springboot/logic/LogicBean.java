@@ -4,17 +4,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 //サービスから、このロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所
 	// サービスの中で、リポジトリをフィールドとしてBeanインスタンスをメンバとしているように、
 	// このロジックのクラスも、まず、Bean化できるように、Beanクラスとして作り、サービスの中で、@Autowiredを使って、インスタンスを自動生成できるようにしていく。
-// このBeanクラスを、構成クラスに登録します。
-// これは @Component を付けます
+// これは クラスに@Component を付けます  コンストラクタに、@Autowired　を付けます。
 
 @Component
 public class LogicBean {
 
+	@Autowired
 	public LogicBean() {
 		super();
 		// TODO 自動生成されたコンストラクター・スタブ

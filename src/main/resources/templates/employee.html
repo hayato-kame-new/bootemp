@@ -33,12 +33,13 @@ padding: 5px; color:black; background:#f0f0f0;
 
 <table>
 	<tr><th>社員ID</th><th>名前</th><th></th><th></th></tr>
-	<tr th:each="emp : ${employeeList}" th:object="${emp}">
-		<td th:text="*{employeeId}"></td>
-		<td th:text="*{name}"></td>
+	
+	<tr th:each="obj : ${employeeList}" th:object="${obj}">	
+		<td th:text="${obj[0]}"></td>
+		<td th:text="${obj[1]}"></td>
 		<td>
 			 <form method = "get" action = "/emp_add_edit" >
-			 	<input type="hidden" name="employeeId" th:value="*{employeeId}" >
+			 	<input type="hidden" name="employeeId" th:value="${obj[0]}" >
 			 	<input type="hidden" name="action" th:value="edit" >
 			 	<input type="submit" value="編集" >
 			 </form>		
@@ -46,7 +47,7 @@ padding: 5px; color:black; background:#f0f0f0;
 		<td>
 		
 		</td>
-	</tr>
+	</tr> 
 </table>
 
 <!-- aリンクは、HTTPメソッドではGET URLパスの末尾?以降がクエリーパラメータとしてコントローラの対応するリクエストハンドラに送られる -->

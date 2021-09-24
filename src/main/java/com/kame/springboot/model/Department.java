@@ -1,8 +1,11 @@
 package com.kame.springboot.model;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
@@ -23,6 +26,19 @@ public class Department {
 	@Column(name = "departmentname", length = 20, nullable = false, unique = true) // カラム名は、postgreSQL の全て小文字に合わせる
 	private String departmentName;
 	
+	// 相互参照なEntityクラス化する  リレーション
+	// 相互参照なので、ER図にはないですが部署側が社員クラスのリストを持っています。
+	// テーブルに専用のカラムもありません。 mappedBy親がわにつけるらしい これによって、参照管理テーブルが作られなくなります。
+	// 参照管理テーブルがない場合、employeesの中身は従業員テーブルから自動的に作られます。
+	// @OneToManyで用意されているmappedByオプションを使います。これを使うと、３つのテーブルで管理されていた、参照用の中間テーブルが作られなくなり、管理されます。
+	 // mappedByに指定する値は「対応する(＠ManyToOneがついた)フィールド変数名」になります。mappedBy = "department"
+	 @OneToMany
+	List<Employee> employees;  // OneToMany だと、フィールド名を複数形にしてください アクセッサの ゲッター セッターも追加忘れずに
+	// employeeエンティティに対して、このDepartmentエンティティは、親エンティティになる
+	
+
+
+
 	// コンストラクタ
 	public Department() {
 		super();
@@ -42,6 +58,14 @@ public class Department {
 
 
 	// アクセッサ
+	public List<Employee> getEmployees() {
+		return employees;
+	}
+	
+	public void setEmployees(List<Employee> employees) {
+		this.employees = employees;
+	}
+	
 	public String getDepartmentId() {
 		return departmentId;
 	}

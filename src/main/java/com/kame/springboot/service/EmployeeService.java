@@ -39,8 +39,17 @@ public class EmployeeService {
 	   */
 	@SuppressWarnings("unchecked")
 	public List<Employee> findAllOrderByEmpId() { // 簡単なものはリポジトリの メソッド自動生成機能で
-		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成
+		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成 idが、employeeIdのため、自動生成使えない？らしい
+		// エラー
 		return employeeRepository.findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();  
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Employee> getEmpListOrderByAsc() {
+		
+		Query query = entityManager.createNativeQuery("select * from employee  order by employeeid asc");
+		List<Employee> empList = query.getResultList();
+		return empList;
 	}
 	
 	/**
@@ -67,4 +76,6 @@ public class EmployeeService {
 	public void logic_test_from_service() {
 		logicBean.logic_test(); 
 	}
+	
+	
 }

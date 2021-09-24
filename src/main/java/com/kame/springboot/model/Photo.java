@@ -1,10 +1,12 @@
 package com.kame.springboot.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -25,6 +27,12 @@ public class Photo {
 	@Column(name = "mime")  // 全て小文字にしてください
 	private String mine;  // contentTypeのことです   "image/jpeg"   "image/png"など  "タイプ/サブタイプ"  MIMEタイプは常にタイプとサブタイプの両方を持ち、一方だけで使われることはありません。
 	// nullでも構わないように null許可
+	
+	// Photo側は 社員を持っています。Photo側が、親エンティティ
+	// photoテーブルには、employeeのカラムはありません。mappedBy 親がわにつける mappedBy = "photo",
+	 @OneToOne( cascade = CascadeType.ALL) // 1対1 写真は、カスケードつける
+	 Employee employee;  // OneToOne  なので、フィールド名は単数形にしてください。
+	
 
 	/**
 	 * 引数なしのコンストラクタ
@@ -34,15 +42,22 @@ public class Photo {
 	}
 
 	// アクセッサ
+	
 	public int getPhotoId() {
 		return photoId;
 	}
 
-
 	public void setPhotoId(int photoId) {
 		this.photoId = photoId;
 	}
+	
+	public Employee getEmployee() {
+		return employee;
+	}
 
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
 
 	public byte[] getPhotoData() {
 		return photoData;

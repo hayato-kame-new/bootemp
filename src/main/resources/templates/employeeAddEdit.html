@@ -32,10 +32,8 @@ padding: 5px; color:black; background:#f0f0f0;
 
 <!-- 新規の規定値がStringやDateの参照型では null　なので、formModel.employeeId    formModel.name  は表示するものはない -->
 <p th:text="${formModel.employeeId}"></p>
-
 <p th:text="${formModel.name}"></p>
 <p th:text="${formModel.age}"></p>
-
 <p th:text="${formModel.gender}"></p>
 <p th:text="${formModel.photoId}"></p>
 <p>(<small style="color:red;">※</small>)印は、入力必須です。</p>
@@ -51,7 +49,7 @@ padding: 5px; color:black; background:#f0f0f0;
  	写真: <img src="" alt="写真" title="社員の写真" width="300" height="250" />
  	</p>
  	(<small style="color:red;">※</small>)
- 	<input type="file" name="image" accept=".jpeg, .jpg, .png" />
+ 	<input type="file" name="upload_file" accept=".jpeg, .jpg, .png" />
  	<input type="hidden" name="photoId" th:value="*{photoId}" />
  	
  	<p>
