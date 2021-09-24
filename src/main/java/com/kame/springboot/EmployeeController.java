@@ -19,8 +19,13 @@ public class EmployeeController {
 	@Autowired
 	EmployeeService employeeService;
 	
+	/**
+	 * 社員一覧表示
+	 * @param mav
+	 * @return mav
+	 */
 	@RequestMapping(value = "/employee", method = RequestMethod.GET)
-	public ModelAndView index(ModelAndView mav) {
+	public ModelAndView employee(ModelAndView mav) {
 		mav.setViewName("employee");
 		mav.addObject("title", "Emploee Page");
 		mav.addObject("msg", "従業員一覧です");
@@ -29,9 +34,16 @@ public class EmployeeController {
 		return mav;
 	}
 	
-	// 画面を表示するための
+	/**
+	 * 新規登録・編集 画面表示
+	 * @param action
+	 * @param employeeId
+	 * @param employee
+	 * @param mav
+	 * @return mav
+	 */
 	@RequestMapping(value = "emp_add_edit", method = RequestMethod.GET)
-	public ModelAndView empAddEdit(
+	public ModelAndView empDisplay(
 			@RequestParam(name = "action") String action, 
 			@RequestParam(name = "employeeId", required = false)String employeeId,
 			@ModelAttribute("formModel") Employee employee,
@@ -53,9 +65,36 @@ public class EmployeeController {
 			// そもそも フォームからの値が入っていた訳ですが、employeeIdしか、hiddenタグで送られていませんでした。 
 			mav.addObject("formModel", findEmployee); // この１行がとても重要。
 			break;
-		}
+		}		
+		return mav;
+	}
+	
+	// 新規 編集する
+	@RequestMapping(value = "emp_add_edit" , method = RequestMethod.POST)
+	public ModelAndView empAddUpdate(
+			@RequestParam(name = "action") String action, 
+			@RequestParam(name = "employeeId", required = false)String employeeId,
+			@ModelAttribute("formModel") Employee employee,
+			ModelAndView mav) {
+		
+		
+		
+		
 		
 		return mav;
 	}
+	
+	// テスト コントローラからは、サービスを呼び出して使うようにします。
+	@RequestMapping(value = "/test" , method = RequestMethod.GET)
+	public ModelAndView index(ModelAndView mav) {
+		mav.addObject("MSG", "テスト");
+		mav.setViewName("test");
+		
+		// コンソールに出れば成功
+		employeeService.logic_test_from_service();
+		return mav;
+	}
+	
+	
 
 }

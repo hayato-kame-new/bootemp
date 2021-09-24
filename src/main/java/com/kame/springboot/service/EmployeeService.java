@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kame.springboot.logic.LogicBean;
 import com.kame.springboot.model.Employee;
 import com.kame.springboot.repositories.EmployeeRepository;
 
@@ -25,6 +26,10 @@ public class EmployeeService {
 	// リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
 	@PersistenceContext  // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。 その他の場所には書けません。１箇所だけ
 	private EntityManager entityManager;
+	
+	@Autowired
+	LogicBean logicBean;
+	
 	
 	/**
 	 *  リポジトリの自動生成機能で作る、findAll()メソッドだと、更新をした後に、更新したデータが一番後ろになってしまうため、使わない。
@@ -55,5 +60,11 @@ public class EmployeeService {
 		Employee employee = (Employee) query.getSingleResult();
 		return employee;
 	}
-
+	
+	//サービスから、ロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所
+	// サービスの中で、リポジトリをフィールドとしてBeanインスタンスをメンバとしているように、
+	// ロジックのクラスも、まず、Bean化できるように、Beanクラスとして作り、サービスの中で、@Autowiredを使って、インスタンスを自動瀬星できるようにしていく。
+	public void logic_test_from_service() {
+		logicBean.logic_test(); 
+	}
 }

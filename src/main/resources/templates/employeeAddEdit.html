@@ -25,11 +25,41 @@ padding: 5px; color:black; background:#f0f0f0;
 </head>
 <body>
 
+<hr/>
+	<p>新規と編集をするページ</p>
+	
+	<p th:text="${msg}" ></p>
+
+<!-- 新規の規定値がStringやDateの参照型では null　なので、formModel.employeeId    formModel.name  は表示するものはない -->
 <p th:text="${formModel.employeeId}"></p>
 
 <p th:text="${formModel.name}"></p>
 <p th:text="${formModel.age}"></p>
 
 <p th:text="${formModel.gender}"></p>
+<p th:text="${formModel.photoId}"></p>
+<p>(<small style="color:red;">※</small>)印は、入力必須です。</p>
+<form action="/emp_add_edit" method="post" enctype="multipart/form-data" th:object="${formModel}">
+
+	<input type="hidden" name="action" th:value="${action}" />
+	<input type="hidden" name="employeeId" th:value="*{employeeId}" />
+	<input type="hidden" name="photoId" th:value="*{photoId}" />
+	
+	<p th:unless="${formModel.employeeId} == null" th:text="社員ID: *{employeeId}"></p>
+
+ 	<p>
+ 	写真: <img src="" alt="写真" title="社員の写真" width="300" height="250" />
+ 	</p>
+ 	(<small style="color:red;">※</small>)
+ 	<input type="file" name="image" accept=".jpeg, .jpg, .png" />
+ 	<input type="hidden" name="photoId" th:value="*{photoId}" />
+ 	
+ 	<p>
+ 	<input type="submit" value="送信" />
+	</p>
+</form>
+
+
+
 </body>
 </html>

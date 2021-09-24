@@ -32,7 +32,15 @@ padding: 5px; color:black; background:#f0f0f0;
 	
 <!-- 新規では、formModelには、空のインスタンスで、各フィールドは、各データ型の規定値が入ってる -->
 	
+ <p th:text="${formModel.departmentId}"></p>
+	<p th:text="${formModel.departmentName}"></p> 
+	
+	
 	<form method="post" action="/dep_add_edit" th:object="${formModel}">
+	
+		<ul>
+			<li th:each="error : ${#fields.detailedErrors()}" class="err" th:text="${error.message}" />
+		</ul>
 	
 		<!-- 新規では、departmentId と departmentName の 値は、String型の規定値のnull が初期値として、フィールドのvalue属性の値に入ってきてる -->
 		<input type="hidden" name="departmentId" th:value="*{departmentId}" />

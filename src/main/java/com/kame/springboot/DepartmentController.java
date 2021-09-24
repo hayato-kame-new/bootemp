@@ -58,7 +58,7 @@ public class DepartmentController {
 	 * @return mav
 	 */
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.GET)
-	public ModelAndView depNewEdit(
+	public ModelAndView depDisplay(
 			@RequestParam(name = "action") String action, // デフォルトだと、必須パラメータで、nullじゃいけないエラー発生 
 			@RequestParam(name = "departmentId", required = false) String departmentId, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
 			@RequestParam(name = "departmentName", required = false) String departmentName, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
@@ -72,12 +72,15 @@ public class DepartmentController {
 		} else if (action.equals("depEdit")) {
 			// 編集のときには、"formModel"という変数には、フォームからのデータが入っているが、hiddenで送られているので、departmentの各フィールドは、最初に新規で送られたもの同じです
 			// 規定値になってるので、hiddenタグから送られたパラメータの値をセットします。	
+				
+			// この２行でもOK。employeeみたいなメソッドを作って、エンティティを検索してきて、それをaddObject("formModel", インスタンスの入った変数)としてもいい
+			// department.setDepartmentId(departmentId); // これでもいい
+			// department.setDepartmentName(departmentName); // これでもいい
 			
-			
-			// この２行違います。employeeみたいなメソッドを作って、エンティティを検索してきて、それをaddObject("formModel", インスタンスの入った変数)としてください！！
-			department.setDepartmentId(departmentId); // 違う
-			department.setDepartmentName(departmentName); // 違う
-			}
+			Department findDepartment = departmentService.getByDepartmentId(departmentId);
+			mav.addObject("formModel", findDepartment );  // この１行
+		}
+		
 		mav.setViewName("departmentAddEdit");
 		mav.addObject("action", action);
 		return mav;

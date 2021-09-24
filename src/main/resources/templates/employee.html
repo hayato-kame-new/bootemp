@@ -29,7 +29,7 @@ padding: 5px; color:black; background:#f0f0f0;
 
 <hr />
 
-<p th:unless="${employeeList}" th:text="現在登録されている社員はいません" ></p>
+<p th:if="${employeeList} == null" th:text="現在登録されている社員はいません" ></p>
 
 <table>
 	<tr><th>社員ID</th><th>名前</th><th></th><th></th></tr>

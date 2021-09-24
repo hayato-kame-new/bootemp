@@ -27,7 +27,7 @@ public class DepartmentService {
 	// リポジトリには、限界がある リポジトリのメソッド自動生成できないものは、idを使ったものです。今回は、departmentIdですので。
 	// DAOに書かずに、サービスに定義します。
 	// リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
-	@PersistenceContext  // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。 その他の場所には書けません。１箇所だけ
+	@PersistenceContext  // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。 その他の場所(コントローラーなど）には書けません。１箇所だけ
 	private EntityManager entityManager;
 	
 	/**
@@ -147,7 +147,23 @@ public class DepartmentService {
 		return true;
 	}
 	
-	
+	/**
+	 * 今回は、 id でなく、departmentId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、
+	 * リポジトリとは関係なく、
+	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
+	 * サービスクラスに定義して利用する。
+	 * JPQLクエリーの where departmentid のところ、departmentid  という風に全て小文字にすること
+	 * @param departmentId
+	 * @return department
+	 */
+	public Department getByDepartmentId(String departmentId) {
+		Query query = entityManager.createQuery("from Department where departmentid = :departmentId");
+		query.setParameter("departmentId", departmentId);
+		// Queryインスタンスが持っている getSingleResult() インスタンスメソッドの戻り値は java.lang.Object です。
+		// 一つの型のない結果を返します。だから、キャストが必要です。
+		Department department = (Department) query.getSingleResult();
+		return department;		
+	}
 
 
 	
