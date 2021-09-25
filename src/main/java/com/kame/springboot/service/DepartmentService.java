@@ -74,7 +74,7 @@ public class DepartmentService {
 		
 		query.select(root).orderBy(builder.desc(root.get("departmentId")));
 		
-		List<Department> list = entityManager
+		List<Department> list = (List<Department>)entityManager
 				.createQuery(query)
 				.setFirstResult(0)
 				.setMaxResults(1)

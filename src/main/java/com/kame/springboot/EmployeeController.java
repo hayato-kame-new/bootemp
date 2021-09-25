@@ -19,8 +19,9 @@ import com.kame.springboot.service.EmployeeService;
 import com.kame.springboot.service.PhotoService;
 
 @Controller  // コンポーネントです
-public class EmployeeController {
+public class EmployeeController { // コントローラでは、サービスだけを利用する
 	
+	// フィールドには、サービスのBeanだけを置いて サービスの中から、いろんなものを呼び出す。
 	@Autowired
 	EmployeeService employeeService;
 	
@@ -33,7 +34,7 @@ public class EmployeeController {
 	 * @return mav
 	 */
 	@SuppressWarnings("uncheckd")
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	@RequestMapping(value = "/employee", method = RequestMethod.GET)
 	public ModelAndView index(ModelAndView mav) {
 		mav.setViewName("employee");
 		mav.addObject("title", "Emploee Page");
@@ -130,16 +131,25 @@ public class EmployeeController {
 				// 失敗のメッセージを出す
 			}
 			// 成功したら、一番最後のphotoIdを取得して、それをemployeeインスタンスののphotoIdの値にする
-			
-			// int getLastPhotoId = photoService.getLastPhotoId();
-			
-			
+			int lastPhotoId = photoService.getLastPhotoId();
+			if (lastPhotoId == 0) {
+				//失敗 失敗メッセージを
+			}
+			// 取得に成功したら、このlastPhotoIdの値を employeeオブジェクトの、photoIdカラムに入れます。
+			// まず、新規登録用に、社員IDを生成します。
+			String generatedEmpId = employeeService.generateEmployeeId();
+			// データベースに登録する  引数のemployeeには、フォームから送られたデータが入っているインスタンスになります。
+			employee.setEmployeeId(generatedEmpId);  // null　を、生成したIDで上書きする
+			employee.setPhotoId(lastPhotoId); // 0 からさっき、作られて、最後から取得してきたIDで上書きする
+			// 更新した employee を引数に当てる サービスのメソッドを呼び出してください。
+			// サービスのemployeeAddメソッドでは、repositoryの自動生成機能のsaveAndFlushを呼び出してます。
+			 employeeService.employeeAdd(employee);  // 戻り値は、保存したエンティティです。
 			
 			break;
 		}
 		
-		
-		return mav;
+		// 社員一覧のページにリダイレクトします。
+		return new ModelAndView("redirect:/employee");
 	}
 	
 	

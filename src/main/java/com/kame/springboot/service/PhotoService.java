@@ -2,16 +2,21 @@ package com.kame.springboot.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kame.springboot.logic.LogicBean;
+import com.kame.springboot.model.Photo;
 import com.kame.springboot.repositories.PhotoRepository;
 
 @Service
@@ -66,10 +71,34 @@ public class PhotoService {
 		return true;
 	 }
 	 
-	 
-//	 public int getLastPhotoId() {
-////		 Query query = entityManager.
-//	 }
+	 // 失敗したら、０を返す
+	 public int getLastPhotoId() {
+		 
+		  int getId = 0;
+		 CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+		 
+		 CriteriaQuery<Photo> query = builder.createQuery(Photo.class);
+		 
+		 Root<Photo> root = query.from(Photo.class);
+		 
+		 query.select(root);
+		 
+		 query.orderBy(builder.desc(root.get("photoId")));
+		 
+		 List<Photo> list = (List<Photo>)entityManager
+				 .createQuery(query)
+				 .setFirstResult(0)
+				 .setMaxResults(1)
+				 .getResultList();
+		 
+		 if (list.size() == 0) {
+			 return getId;  // 0が入ってる
+		 } else {			 
+			 Photo photo = list.get(0);
+			 getId = photo.getPhotoId();
+			 return getId;
+		 }
+	 }
 	 
 
 }

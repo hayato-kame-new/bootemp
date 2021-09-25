@@ -5,6 +5,9 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,5 +80,41 @@ public class EmployeeService {
 		logicBean.logic_test(); 
 	}
 	
+	// 社員ID生成する 
+	public String generateEmployeeId() {
+		
+		String generatedEmpId = null;
+		
+		CriteriaBuilder builder = 
+				entityManager.getCriteriaBuilder();
+		
+		CriteriaQuery<Employee> query = 
+				builder.createQuery(Employee.class);
+		
+		Root<Employee> root = query.from(Employee.class);
+		
+		query.select(root).orderBy(builder.desc(root.get("employeeId")));
+		
+		List<Employee> list = (List<Employee>)entityManager.createQuery(query)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		// 社員IDが 辞書順に並び替えて、最後にあるものを取得した。それがリストに１つ入ってるはず、リストに要素が一つも無かったら、まだ、全く登録されていないので
+		if (list.size() == 0) {
+			 // まだ、ひとつも、employeeデータが登録されてなかったら、
+			generatedEmpId = "EMP0001"; // 一番最初になります。
+		 } else {	
+			Employee employee = list.get(0);
+			String getLastId = employee.getEmployeeId(); // 最後に登録されているId
+			// 文字列切り取りして、数値に変換して、 +1 する それをまた、文字列にフォーマットで変換する
+			generatedEmpId = String.format("EMP%04d", Integer.parseInt(getLastId.substring(3)) + 1);
+		}
+		return generatedEmpId;
+	}
 	
+	// 社員登録する employee には、フォームからのデータがセットされてる。そして、さらに、
+	// 新しく登録した photoId　と、 自分で手動で、生成したemployeeIdの 値もセットして、更新してある。employeeインスタンスです。
+	public Employee employeeAdd(Employee employee) {
+		return employeeRepository.saveAndFlush(employee);
+	}
 }

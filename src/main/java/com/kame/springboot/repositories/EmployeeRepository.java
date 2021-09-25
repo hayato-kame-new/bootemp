@@ -16,5 +16,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
 	// インタフェースには、抽象メソッドの宣言
 	// PostgreSQL だと、order by departmentId を付けないと、順番が、更新されたのが一番最後の順になってします。
 		public List<Employee> findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();
+
+		
+		public <S extends Employee> S saveAndFlush(S entity);
 	
+		
 }
