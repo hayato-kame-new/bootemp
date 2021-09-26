@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -29,8 +30,18 @@ public class Photo {
 	// nullでも構わないように null許可
 	
 	// Photo側は 社員を持っています。Photo側が、親エンティティ
+//	 mappedByを使うには、テーブル設計で、子テーブル側に外部制約と をつける必要があります。また、
+//	 必要なら、cascadeも子テーブル側に書く
+	 
+	// テーブルに専用のカラムもありません。 mappedBy親がわにつけるらしい これによって、参照管理テーブル(3つめの中間テーブル）が作られなくなります。
+		// 参照管理テーブルがない場合、employeesの中身は従業員テーブルから自動的に作られます。
+	// mappedByに指定する値は「対応する(＠OneToOneがついた)フィールド変数名」になります。
 	// photoテーブルには、employeeのカラムはありません。mappedBy 親がわにつける mappedBy = "photo",
+	// 中間テーブルを作らないようにするためには、もう一個方法がある、 myppedByとの併用ができないので、myppedByを消す
+	// myppedByだと、どのカラムと、連携するのか、親側から、指定できないため 使わない??
+	// @OneToOne( mappedBy = "photo", cascade = CascadeType.ALL)
 	 @OneToOne( cascade = CascadeType.ALL) // 1対1 写真は、カスケードつける
+	 @JoinColumn(name = "photoid")
 	 Employee employee;  // OneToOne  なので、フィールド名は単数形にしてください。
 	
 

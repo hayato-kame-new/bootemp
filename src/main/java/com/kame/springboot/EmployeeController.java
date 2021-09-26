@@ -2,9 +2,11 @@ package com.kame.springboot;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,19 +16,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kame.springboot.component.ViewBean;
+import com.kame.springboot.model.Department;
 import com.kame.springboot.model.Employee;
+import com.kame.springboot.service.DepartmentService;
 import com.kame.springboot.service.EmployeeService;
 import com.kame.springboot.service.PhotoService;
 
 @Controller  // コンポーネントです
-public class EmployeeController { // コントローラでは、サービスだけを利用する
+public class EmployeeController { // コントローラでは、サービスクラスを利用する
 	
-	// フィールドには、サービスのBeanだけを置いて サービスの中から、いろんなものを呼び出す。
+	// フィールドには、サービスを置いて サービスの中から、いろんなものを呼び出す。
 	@Autowired
 	EmployeeService employeeService;
 	
 	@Autowired
 	PhotoService photoService;
+	
+	@Autowired
+	DepartmentService departmentService;
+	
+	// コントローラでは、 ビューのコンポーネントをインスタンスとしてもつ
+	@Autowired
+	ViewBean viewBean;
+
 	
 	/**
 	 * 社員一覧表示
@@ -37,7 +50,7 @@ public class EmployeeController { // コントローラでは、サービスだ�
 	@RequestMapping(value = "/employee", method = RequestMethod.GET)
 	public ModelAndView index(ModelAndView mav) {
 		mav.setViewName("employee");
-		mav.addObject("title", "Emploee Page");
+		mav.addObject("title", "index");
 		mav.addObject("msg", "従業員一覧です");
 		// このメソッドがだめ
 		 // List<Employee> employeeList = (List<Employee>)employeeService.findAllOrderByEmpId();
@@ -65,6 +78,12 @@ public class EmployeeController { // コントローラでは、サービスだ�
 		
 		mav.setViewName("employeeAddEdit");
 		mav.addObject("action", action);
+		List<String> prefList = viewBean.getPrefList();
+		mav.addObject("prefList", prefList);
+		List<Department> depList = departmentService.findAllOrderByDepId();
+		mav.addObject("depList", depList);
+		mav.addObject("title" , action);
+		
 		switch(action) {
 		case "add":
 			// 新規だと、空のEmployeeインスタンスが用意されている、各フィールドには、各データ型の規定値が入ってる
@@ -83,6 +102,7 @@ public class EmployeeController { // コントローラでは、サービスだ�
 		return mav;
 	}
 	
+	
 	// 新規 編集する
 	// Spring Bootでは、デフォルトでファイルサイズの上限が1MB(1024*1024=1048576bytes)となっています。アップロードしたファイルのサイズがこれより大きい場合、MaxUploadSizeExceededExceptionがスローされ、リクエストは処理されません。
 	// propertiesファイルの場合 以下の２行を加えてください。
@@ -93,12 +113,18 @@ public class EmployeeController { // コントローラでは、サービスだ�
 			@RequestParam(name = "action") String action, 
 			@RequestParam(name = "employeeId", required = false)String employeeId,
 			@RequestParam(name = "upload_file", required = false) MultipartFile multipartFile,
-			@RequestParam(name = "photoId")int photoId, // intで良いのかな
+			// @RequestParam(name = "photoId")int photoId, // intで良いのかな いらない
+			@RequestParam(name = "hireDate")@DateTimeFormat(pattern = "yyyy-MM-dd") Date hireDate,
+			@RequestParam(name = "retirementDate", required = false)@DateTimeFormat(pattern = "yyyy-MM-dd") Date retirementDate,
 			@ModelAttribute("formModel") Employee employee,
 			ModelAndView mav) {
 		
 			// アップロードされたファイルは「org.springframework.web.multipart.MultipartFile」で受け取ります。
 		
+		
+
+// コントローラで@ModelAttributeを使用したため、すべてのパラメータが文字列形式で渡されます。Date型に変換すべきです?
+		System.out.println(employee.getHireDate());
 			
 			String mime = multipartFile.getContentType();  // contentTypeを取得します。 "image/jpeg"
 			long size = multipartFile.getSize();  // 3633674
@@ -122,6 +148,8 @@ public class EmployeeController { // コントローラでは、サービスだ�
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		//データベース操作の結果
+		String resultMsg = "";
 		
 		switch(action) {
 		case "add":
@@ -131,23 +159,36 @@ public class EmployeeController { // コントローラでは、サービスだ�
 				// 失敗のメッセージを出す
 			}
 			// 成功したら、一番最後のphotoIdを取得して、それをemployeeインスタンスののphotoIdの値にする
+			
 			int lastPhotoId = photoService.getLastPhotoId();
 			if (lastPhotoId == 0) {
 				//失敗 失敗メッセージを
 			}
+			
 			// 取得に成功したら、このlastPhotoIdの値を employeeオブジェクトの、photoIdカラムに入れます。
 			// まず、新規登録用に、社員IDを生成します。
-			String generatedEmpId = employeeService.generateEmployeeId();
+			String generatedEmpId = employeeService.generateEmpId();
 			// データベースに登録する  引数のemployeeには、フォームから送られたデータが入っているインスタンスになります。
+			
 			employee.setEmployeeId(generatedEmpId);  // null　を、生成したIDで上書きする
 			employee.setPhotoId(lastPhotoId); // 0 からさっき、作られて、最後から取得してきたIDで上書きする
-			// 更新した employee を引数に当てる サービスのメソッドを呼び出してください。
-			// サービスのemployeeAddメソッドでは、repositoryの自動生成機能のsaveAndFlushを呼び出してます。
-			 employeeService.employeeAdd(employee);  // 戻り値は、保存したエンティティです。
+			// 更新した employee を引数に当てる サービスのメソッドを呼び出す
+			 boolean result3 = employeeService.empAdd(employee);  // 戻り値は、保存したエンティティです。
 			
+			 if(!result3) {// 失敗のメッセージ出す
+				resultMsg = "登録できませんでした。";
+			}
+			// 成功したら成功のメッセージを
+			 resultMsg = "登録しました。";
 			break;
 		}
 		
+//		List<String> prefList = viewBean.getPrefList();
+//		mav.addObject("prefList", prefList); 
+//		List<Department> depList = departmentService.findAllOrderByDepId();
+//		mav.addObject("depList", depList);
+		// mav.addObject("title" , action); // いらないかも
+		mav.addObject("resultMsg", resultMsg);
 		// 社員一覧のページにリダイレクトします。
 		return new ModelAndView("redirect:/employee");
 	}

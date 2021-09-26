@@ -31,9 +31,9 @@ public class DepartmentController {
 	 * @return
 	 */
 	@RequestMapping(value = "/department", method = RequestMethod.GET)
-	public ModelAndView department(ModelAndView mav) {
+	public ModelAndView index(ModelAndView mav) {
 		mav.setViewName("department");
-		mav.addObject("title", "Department Page");
+		mav.addObject("title", "index");
 		mav.addObject("msg", "部署データ一覧です");
 		
 		// DAOからじゃなくて、サービスから呼び出す		
@@ -83,6 +83,7 @@ public class DepartmentController {
 		
 		mav.setViewName("departmentAddEdit");
 		mav.addObject("action", action);
+		mav.addObject("title", action);
 		return mav;
 	}
 	

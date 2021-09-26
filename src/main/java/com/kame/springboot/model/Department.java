@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
@@ -14,7 +15,7 @@ import javax.validation.constraints.NotEmpty;
 public class Department {
 	
 	@Id
-	@Column(name = "departmentid", length = 20) // カラム名は、postgreSQL の全て小文字に合わせる
+	@Column(name = "departmentid") // カラム名は、postgreSQL の全て小文字に合わせる
 	private String departmentId;  // 新規の時には、nullで渡っていくので、バリデーションを@NotEmpty　を付けてはいけない
 	
 	
@@ -30,13 +31,19 @@ public class Department {
 	// 相互参照なので、ER図にはないですが部署側が社員クラスのリストを持っています。
 	// テーブルに専用のカラムもありません。 mappedBy親がわにつけるらしい これによって、参照管理テーブルが作られなくなります。
 	// 参照管理テーブルがない場合、employeesの中身は従業員テーブルから自動的に作られます。
+	// mappedBy は親がわにつける
+//	 mappedByを使うには、テーブル設計で、子テーブル側に外部制約と をつける必要があります。また、
+//	 必要なら、cascadeも子テーブル側に書く  cascade必要なければ付けない
 	// @OneToManyで用意されているmappedByオプションを使います。これを使うと、３つのテーブルで管理されていた、参照用の中間テーブルが作られなくなり、管理されます。
 	 // mappedByに指定する値は「対応する(＠ManyToOneがついた)フィールド変数名」になります。mappedBy = "department"
-	 @OneToMany
+	 
+	// @OneToMany(mappedBy = "department")  // これだと、カラム見つからないと言われた。
+	// @OneToMany( cascade = CascadeType.MERGE) // 更新だけ  cascadeする？？で良いのかな
+	@OneToMany 
+	@JoinColumn(name = "departmentid")  //中間テーブルを作らないようにするためのもの@JoinColumn　とmappedBy = "department"は併用できない
 	List<Employee> employees;  // OneToMany だと、フィールド名を複数形にしてください アクセッサの ゲッター セッターも追加忘れずに
-	// employeeエンティティに対して、このDepartmentエンティティは、親エンティティになる
 	
-
+	
 
 
 	// コンストラクタ

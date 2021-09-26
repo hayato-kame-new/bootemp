@@ -2,7 +2,7 @@
 <html xmlns:th="http://thymeleaf.org">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title th:text="${title}">Insert title here</title>
+<title th:text="|#{employee_page.title} - ${title} |"></title>
 <style>
 h1 {
 font-size: 24px; font-weight:bold; color:gray;}
@@ -26,7 +26,7 @@ padding: 5px; color:black; background:#f0f0f0;
 <body>
 
 <p th:text="${msg}"></p>
-
+<p th:if="${resultMsf != null}" th:text="${msg}"></p>
 <hr />
 
 <p th:if="${employeeList} == null" th:text="現在登録されている社員はいません" ></p>

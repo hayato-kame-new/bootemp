@@ -11,7 +11,9 @@ import javax.persistence.Table;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 // javax.validation.constraints.NotEmpty  こちらを使う
-import javax.validation.constraints.NotEmpty;  
+import javax.validation.constraints.NotEmpty;
+
+import org.springframework.format.annotation.DateTimeFormat;  
 
 // Departmentエンティティ  Photoエンティティの従エンティティ(子エンティティ)
 
@@ -24,7 +26,7 @@ public class Employee {
 	private String employeeId;
 	
 	
-	@Column(name = "name",length = 20)
+	@Column(name = "name", length=10485760 )
 	@NotEmpty
 	private String name;
 	
@@ -50,12 +52,16 @@ public class Employee {
 	@Column(name = "address")
 	private String address;
 	
+	
+	
 	@Column(name = "departmentid") // 全て小文字のカラム名を指定すること
 	private String departmentId; // リレーションのあるカラム
 	
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "hiredate") // 全て小文字のカラム名を指定すること
 	private Date hireDate;  // java.util.Date 
 	
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "retirementdate", nullable = true) // 全て小文字のカラム名を指定すること
 	private Date retirementDate;  // java.util.Date 
 
@@ -66,7 +72,12 @@ public class Employee {
 //	ALTER TABLE employee
 //	ADD FOREIGN KEY (departmentId) 
 //	REFERENCES department (departmentId);
-	@ManyToOne
+	
+	
+	//model.Employee column: departmentid (should be mapped with insert="false" update="false")のエラーが出たら、insertable=false,  updatable=false　を書くこと
+	
+	// @JoinColumn(name="departmentid", insertable=false,  updatable=false) // これを付け足したが、果たして良いのか？？？？
+	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
 	Department department;  // @ManyToOne  だから、フィールド名は、単数形にしてください。アクセッサも追加すること ゲッター セッター
 	
 	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。

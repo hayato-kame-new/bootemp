@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -13,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kame.springboot.logic.LogicBean;
+import com.kame.springboot.component.LogicBean;
 import com.kame.springboot.model.Employee;
 import com.kame.springboot.repositories.EmployeeRepository;
 
@@ -80,8 +81,9 @@ public class EmployeeService {
 		logicBean.logic_test(); 
 	}
 	
-	// 社員ID生成する 
-	public String generateEmployeeId() {
+	// 社員ID生成する リレーションのアノテーションを付けたら、エラーで使えなくなりました。
+	// 使いません。
+	public String generateEmpIdFromCriteria() {
 		
 		String generatedEmpId = null;
 		
@@ -112,9 +114,48 @@ public class EmployeeService {
 		return generatedEmpId;
 	}
 	
+	// 手動で、社員IDを生成する リレーションをつけると、こっちでしかできない
+	// エンティティのリレーションを付けたので、こっちを使う、上のCriteria APIだとリレーションつけたら、エラーになるようになった。
+	public String generateEmpId() {
+		// まず、最後尾の社員IDをとってくる order by 辞書順で並べ替えて、desc をして limit 1 
+		// employeeid カラムは、全てを小文字にすること postgreSQLだから テーブル名 カラム名 全て小文字
+		Query query = entityManager.createNativeQuery("select employeeid from employee order by employeeid desc limit 1");
+		// 戻り値は、型のないObjectになるので、キャストすること
+		String lastStringEmpId = (String)query.getSingleResult();
+		int plusOne = Integer.parseInt(lastStringEmpId.substring(3)) + 1;		
+		String getGeneratedEmpId = String.format("EMP%04d", plusOne);		
+		return getGeneratedEmpId;		
+	}
+	
+	// これだと、リレーションのアノテーションをつけた時にエラーとなるので 使わない
 	// 社員登録する employee には、フォームからのデータがセットされてる。そして、さらに、
 	// 新しく登録した photoId　と、 自分で手動で、生成したemployeeIdの 値もセットして、更新してある。employeeインスタンスです。
-	public Employee employeeAdd(Employee employee) {
-		return employeeRepository.saveAndFlush(employee);
+//	public Employee employeeAdd(Employee employee) {
+//		return employeeRepository.saveAndFlush(employee);
+//	}
+	
+	// こっちを使う
+	public boolean empAdd(Employee employee) {
+		Query query = entityManager.createNativeQuery("insert into employee (employeeid, name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) values (?,?,?,?,?,?,?,?,?,?,?)");
+		query.setParameter(1, employee.getEmployeeId());
+		query.setParameter(2, employee.getName());
+		query.setParameter(3, employee.getAge());
+		query.setParameter(4, employee.getGender());
+		query.setParameter(5, employee.getPhotoId());
+		query.setParameter(6, employee.getZipNumber());
+		query.setParameter(7, employee.getPref());
+		query.setParameter(8, employee.getAddress());
+		query.setParameter(9, employee.getDepartmentId());
+		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
+		query.setParameter(11, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
+		
+		System.out.println(employee.getDepartmentId());
+		
+		int result = query.executeUpdate(); // 成功したデータ数が返る
+		if(result != 1) {
+			//失敗
+			return false;
+		}
+		return true;
 	}
 }

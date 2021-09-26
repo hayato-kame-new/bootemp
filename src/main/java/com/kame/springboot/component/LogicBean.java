@@ -1,4 +1,4 @@
-package com.kame.springboot.logic;
+package com.kame.springboot.component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
