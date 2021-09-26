@@ -1,5 +1,7 @@
 package com.kame.springboot.service;
 
+import java.sql.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -57,6 +59,7 @@ public class EmployeeService {
 	}
 	
 	/**
+	 * これ リレーションついてるから、
 	 * 今回は、 id でなく、employeeId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、
 	 * リポジトリとは関係なく、
 	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
@@ -66,12 +69,71 @@ public class EmployeeService {
 	 * @return employee
 	 */
 	public Employee getByEmployeeId(String employeeId) {		
-		Query query = entityManager.createQuery("from Employee where employeeid = :employeeId");
-		query.setParameter("employeeId", employeeId);
+		Query query = entityManager.createNativeQuery("select * from employee where employeeid = ?");
+		query.setParameter(1, employeeId);
+		
+		List<Employee> list =  (List<Employee>) query.getResultList(); // OK
+		Iterator itr = list.iterator();
+		while(itr.hasNext()) {
+			Object[] obj = (Object[]) itr.next();
+			String id = String.valueOf(obj[0]); 
+			String name = String.valueOf(obj[1]);
+			int age = Integer.parseInt(String.valueOf(obj[2]));
+			int gender = Integer.parseInt(String.valueOf(obj[3]));
+			int photoId = Integer.parseInt(String.valueOf(obj[4]));
+			String zipNumber = String.valueOf(obj[5]);
+			String pref = String.valueOf(obj[6]);
+			String address = String.valueOf(obj[7]);
+			String departmentId = String.valueOf(obj[8]); // ここ編集時nullになってしまう。直すこと
+			
+			obj[9].getClass();
+			
+			java.sql.Date sqlhi = (Date) obj[9]; // 取れてる！！
+			
+			// java.util.Date hireDate = new java.util.Date((long) obj[9]);
+			
+			
+			
+			java.util.Date retirementDate = null;
+			if (obj[10] != null) {
+				retirementDate = new java.util.Date((long) obj[10]);
+			}
+			
+		}
+		
+		
+		
+		
+		
+//		
+//		String s = emp.getEmployeeId();
+//		int age = emp.getAge();
+//		int gender = emp.getGender();
+		
+		
+		
+		return new Employee();
+		
+		
 		// Queryインスタンスが持っている getSingleResult() インスタンスメソッドの戻り値は java.lang.Object です。
 		// 一つの型のない結果を返します。だから、キャストが必要です。
-		Employee employee = (Employee) query.getSingleResult();
-		return employee;
+		// List<Employee[]> list = query.getResultList();
+		 // Object obj = query.getSingleResult();
+		//  Employee[] array = (Employee[]) query.getSingleResult();
+		
+		//String id = obj[0];
+		// Employee employee = new Employee(obj[0],obj[1],obj[2],obj[3],obj[4],obj[5],obj[6],obj[7],obj[8],obj[9],obj[10],obj[11]);
+		//query.getResultList() 戻り値 List<Object[]>     List<Object[]> res = query.getResultList();
+		
+//		Object[] array = list.get(0);
+//		System.out.println(array.length);
+//		System.out.println(array[0]);
+//		System.out.println(array[1]);
+//		System.out.println(array[2]);
+//		System.out.println(array[3]);
+//		System.out.println(array[4]);
+		
+		// Employee employee = new Employee(array[0],array[1], array[2],array[3],array[4], array[5],array[6],array[7],array[8],array[9],array[10],array[11]);
 	}
 	
 	//サービスから、ロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所

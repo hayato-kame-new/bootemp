@@ -61,6 +61,9 @@ public class EmployeeController { // コントローラでは、サービスク�
 		return mav;
 	}
 	
+	
+	
+	
 	/**
 	 * 新規登録・編集 画面表示
 	 * @param action
@@ -92,11 +95,15 @@ public class EmployeeController { // コントローラでは、サービスク�
 		case "edit":
 			// 編集だと、employeeIdの値が hiddenで送られきます。employeeIdの値で、検索してエンティティを取得します。
 			// しかし、id　じゃなくて、 employeeId　なので、リポジトリの findByIdの 自動生成するメソッドは、使えません。findById　は、ちなみに引数には、エンティティインスタンスでも良い。
-			// EntityManager と Query を使ったJPQLのメソッドを サービスクラスに作ったので、それを使う。
+			// EntityManager と Query を使ったJPQLのメソッドを サービスクラスに作ったので、それを使う。createNativeQueryで
+			
+			//エラー
+			 // Employee findEmployee = employeeService.getByEmployeeId(employeeId);
+			
 			Employee findEmployee = employeeService.getByEmployeeId(employeeId);
 			//これを、フォームにバインドする@ModelAttribute("formModel") Employee employee の  
 			// そもそも フォームからの値が入っていた訳ですが、employeeIdしか、hiddenタグで送られていませんでした。 
-			mav.addObject("formModel", findEmployee); // この１行がとても重要。
+			 mav.addObject("formModel", findEmployee); // この１行がとても重要。
 			break;
 		}		
 		return mav;
