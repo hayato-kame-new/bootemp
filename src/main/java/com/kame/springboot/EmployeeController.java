@@ -119,7 +119,6 @@ public class EmployeeController { // コントローラでは、サービスク�
 			@RequestParam(name = "action") String action, 
 			@RequestParam(name = "employeeId", required = false)String employeeId,
 			@RequestParam(name = "upload_file", required = false) MultipartFile multipartFile,
-			// @RequestParam(name = "photoId")int photoId, // intで良いのかな いらない
 			@RequestParam(name = "hireDate")@DateTimeFormat(pattern = "yyyy-MM-dd") Date hireDate,
 			@RequestParam(name = "retirementDate", required = false)@DateTimeFormat(pattern = "yyyy-MM-dd") Date retirementDate,
 			@ModelAttribute("formModel") Employee employee,

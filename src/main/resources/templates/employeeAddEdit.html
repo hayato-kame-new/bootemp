@@ -37,6 +37,7 @@ div {margin: 0; padding: 0;}
 <p th:text="${formModel.name}"></p>
 <p th:text="${formModel.age}"></p>
 <p th:text="${formModel.gender}"></p>
+
 <p th:text="${formModel.photoId}"></p>
 <p th:text="${formModel.departmentId}"></p>
 <p th:text="${formModel.pref}"></p>
@@ -45,10 +46,6 @@ div {margin: 0; padding: 0;}
 
 	<input type="hidden" name="action" th:value="${action}" />
 	<input type="hidden" name="employeeId" th:value="*{employeeId}" />
-	<!-- <input type="hidden" name="photoId" th:value="*{photoId}" /> -->
-	
-	
-	
 	
 	<p th:unless="${formModel.employeeId} == null" th:text="|社員ID: *{employeeId}|"></p>
 
@@ -72,7 +69,8 @@ div {margin: 0; padding: 0;}
 	
 	<!-- 写真の表示 -->
  	<p>
- 	写真: <img src="" alt="写真" title="社員の写真" width="300" height="250" />
+ 	写真: 
+ 	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="300" height="250" /> 
  	</p>
  	<!-- 写真の表示 ここまで -->
  	

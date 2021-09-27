@@ -105,4 +105,27 @@ public class PhotoService {
 		 return getPhotoId;  // 最後のphotoidの値を取得して返す
 	 }
 
+	 public byte[] getPhotoData(int photoId) {
+		 
+		 byte[] byteData = null;
+		 
+		 Query query = entityManager.createNativeQuery("select photodata from photo where photoid = ?");
+		 query.setParameter(1, photoId);
+		 byteData = (byte[]) query.getSingleResult();
+		 
+		 
+		 return byteData;  // nullが返る可能性もある
+	 }
+	 
+	public String getMime(int photoId) {
+		String mime = "";
+		Query query = entityManager.createNativeQuery("select mime from photo where photoid = ?");
+		 query.setParameter(1, photoId);
+		 mime = (String) query.getSingleResult();
+
+		
+		return mime;
+	}
+
+
 }
