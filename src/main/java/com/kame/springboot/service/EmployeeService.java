@@ -89,16 +89,19 @@ public class EmployeeService {
 			String address = String.valueOf(obj[7]);
 			String departmentId = String.valueOf(obj[8]); // ここ編集時nullになってしまう。直すこと
 			
-			java.sql.Date sqlHireDate = (Date) obj[9]; // 取れてる！！  1999-11-11
 			
-			java.util.Date utilHireDate = new Date( sqlHireDate.getTime()); // 942246000000
+			java.sql.Date sqlHireDate = (Date) obj[9]; //   1999-11-11
+			
+			java.util.Date utilHireDate = new Date( sqlHireDate.getTime()); // 1998-12-12
 			
 			// 退職日は、nullかもしれないので、java.sql.Date　でnullだったら、java.util.Date でもnullのまま
 			java.util.Date utilRretirementDate = null; 
 			
 			if (obj[10] != null) {
-				java.sql.Date sqlRretirementDate = (Date) obj[10]; // 取れてる！！
-				utilRretirementDate = new java.util.Date(sqlRretirementDate.getTime());  // 取れてる
+				java.sql.Date sqlRretirementDate = (Date) obj[10]; // 2003-03-03
+				
+				long longDate = sqlRretirementDate.getTime();
+				utilRretirementDate = new java.util.Date(longDate);// Mon Mar 03 00:00:00 JST 2003			
 			}
 			emp = new Employee();
 			emp.setEmployeeId(id);
@@ -117,31 +120,13 @@ public class EmployeeService {
 			//  Employee emp = new Employee(id, name, age,gender,photoId,zipNumber,pref,address,departmentId,utilHireDate, utilRretirementDate);
 			resultlist.add(emp);
 		}
-		System.out.println(resultlist.size());
+		// System.out.println(resultlist.size());
 		Employee returnEmp = resultlist.get(0);
 		
 		return returnEmp;
-		
-		
-		// Queryインスタンスが持っている getSingleResult() インスタンスメソッドの戻り値は java.lang.Object です。
-		// 一つの型のない結果を返します。だから、キャストが必要です。
+	
 		// List<Employee[]> list = query.getResultList();
-		 // Object obj = query.getSingleResult();
-		//  Employee[] array = (Employee[]) query.getSingleResult();
-		
-		//String id = obj[0];
-		// Employee employee = new Employee(obj[0],obj[1],obj[2],obj[3],obj[4],obj[5],obj[6],obj[7],obj[8],obj[9],obj[10],obj[11]);
-		//query.getResultList() 戻り値 List<Object[]>     List<Object[]> res = query.getResultList();
-		
-//		Object[] array = list.get(0);
-//		System.out.println(array.length);
-//		System.out.println(array[0]);
-//		System.out.println(array[1]);
-//		System.out.println(array[2]);
-//		System.out.println(array[3]);
-//		System.out.println(array[4]);
-		
-		// Employee employee = new Employee(array[0],array[1], array[2],array[3],array[4], array[5],array[6],array[7],array[8],array[9],array[10],array[11]);
+	
 	}
 	
 	//サービスから、ロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所
@@ -218,8 +203,6 @@ public class EmployeeService {
 		query.setParameter(9, employee.getDepartmentId());
 		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
 		query.setParameter(11, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
-		
-		System.out.println(employee.getDepartmentId());
 		
 		int result = query.executeUpdate(); // 成功したデータ数が返る
 		if(result != 1) {
