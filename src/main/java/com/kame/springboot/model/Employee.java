@@ -116,7 +116,7 @@ public class Employee {
 	 */
 	public Employee(String employeeId, @NotEmpty String name, @Min(0) @Max(110) int age, @Min(1) @Max(2) int gender,
 			int photoId, String zipNumber, String pref, String address, String departmentId, Date hireDate,
-			Date retirementDate, Department department, Photo photo) {
+			Date retirementDate) {
 		super();
 		this.employeeId = employeeId;
 		this.name = name;
@@ -129,8 +129,8 @@ public class Employee {
 		this.departmentId = departmentId;
 		this.hireDate = hireDate;
 		this.retirementDate = retirementDate;
-		this.department = department;
-		this.photo = photo;
+	//	this.department = department;
+	//	this.photo = photo;
 	}
 	
 	/**

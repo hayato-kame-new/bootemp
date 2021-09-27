@@ -49,7 +49,7 @@ div {margin: 0; padding: 0;}
 	
 	
 	
-	<p th:unless="${formModel.employeeId} == null" th:text="社員ID: *{employeeId}"></p>
+	<p th:unless="${formModel.employeeId} == null" th:text="|社員ID: *{employeeId}|"></p>
 
 	<p>
 		<label for="name">名前(<small class="input">※</small>)</label>: <input type="text" id="name" name="name" th:value="*{name}" />		
@@ -106,19 +106,20 @@ div {margin: 0; padding: 0;}
  	<!-- 表示に関しては部署名で表示するため、depListからループで取得するobjから使うけど、
  	     送るデータは、formModelの中の 部署IDに値をセットしてください *{departmentId} にする-->
  	</div>
- 	<p>
+ 	<p >
+ 		
  		<label for="departmentId">所属(<small class="input">※</small>)</label>: 
- 		<!-- <select name="departmentId" size="1"> -->
+ 		
  		<select name="department.departmentId" size="1">
  			<p th:each="obj : ${depList}">	
- 				<!--  表示は、potionの th:textのところに設定する 送る値は、 	 -->
-	 			<option style="width:150px;" th:if="${formModel.departmentId == null}" th:value="${obj.departmentId}" th:text="${obj.departmentName}"> </option>
-	 			
+ 				
+	 			<option style="width:150px;" th:if="*{departmentId == null}" th:value="	*{departmentId}" th:text="${obj.departmentName}"> </option>
 	 			
  			</p>
- 			<p th:each="obj : ${depList}">	 			
-		 		<option style="width:150px;" th:if="${(formModel.departmentId != null) && (obj.departmentId.equals('${formModel.departmentId}'))}" th:value="${obj.departmentId}" th:text="${obj.departmentName}" selected > </option>
-	 			<option style="width:150px;" th:if="${(formModel.departmentId != null) && (!obj.departmentId.equals('${formModel.departmentId}')) }" th:value="${obj.departmentId}" th:text="${obj.departmentName}"  > </option>
+ 			<p th:each="obj : ${depList}">
+ 	
+		 		<option style="width:150px;" th:if="${formModel.departmentId != null && obj.departmentId.equals('*{departmentId}')}" th:value="*{departmentId}" th:text="${obj.departmentName}" selected > </option>
+	 			<option style="width:150px;" th:if="${formModel.departmentId != null && !obj.departmentId.equals('*{departmentId}') }" th:value="*{departmentId}" th:text="${obj.departmentName}"  > </option>
  			</p>
  		</select>
  		

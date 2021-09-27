@@ -1,6 +1,7 @@
 package com.kame.springboot.service;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,12 +69,14 @@ public class EmployeeService {
 	 * @param employeeId
 	 * @return employee
 	 */
-	public Employee getByEmployeeId(String employeeId) {		
+	public Employee getEmp(String employeeId) {		
 		Query query = entityManager.createNativeQuery("select * from employee where employeeid = ?");
-		query.setParameter(1, employeeId);
-		
+		query.setParameter(1, employeeId);		
 		List<Employee> list =  (List<Employee>) query.getResultList(); // OK
 		Iterator itr = list.iterator();
+		Employee emp = null;
+		List<Employee> resultlist = new ArrayList<Employee>(); // リストは、newして確保しておくこと
+		
 		while(itr.hasNext()) {
 			Object[] obj = (Object[]) itr.next();
 			String id = String.valueOf(obj[0]); 
@@ -86,33 +89,38 @@ public class EmployeeService {
 			String address = String.valueOf(obj[7]);
 			String departmentId = String.valueOf(obj[8]); // ここ編集時nullになってしまう。直すこと
 			
-			obj[9].getClass();
+			java.sql.Date sqlHireDate = (Date) obj[9]; // 取れてる！！  1999-11-11
 			
-			java.sql.Date sqlhi = (Date) obj[9]; // 取れてる！！
+			java.util.Date utilHireDate = new Date( sqlHireDate.getTime()); // 942246000000
 			
-			// java.util.Date hireDate = new java.util.Date((long) obj[9]);
+			// 退職日は、nullかもしれないので、java.sql.Date　でnullだったら、java.util.Date でもnullのまま
+			java.util.Date utilRretirementDate = null; 
 			
-			
-			
-			java.util.Date retirementDate = null;
 			if (obj[10] != null) {
-				retirementDate = new java.util.Date((long) obj[10]);
+				java.sql.Date sqlRretirementDate = (Date) obj[10]; // 取れてる！！
+				utilRretirementDate = new java.util.Date(sqlRretirementDate.getTime());  // 取れてる
 			}
-			
+			emp = new Employee();
+			emp.setEmployeeId(id);
+			emp.setName(name);
+			emp.setAge(age);
+			emp.setGender(gender);
+			emp.setPhotoId(photoId);
+			emp.setZipNumber(zipNumber);
+			emp.setPref(pref);
+			emp.setAddress(address);
+			emp.setDepartmentId(departmentId);
+			emp.setHireDate(utilHireDate);
+			emp.setRetirementDate(utilRretirementDate);
+
+			// 引数ありコンストラクタを使うと
+			//  Employee emp = new Employee(id, name, age,gender,photoId,zipNumber,pref,address,departmentId,utilHireDate, utilRretirementDate);
+			resultlist.add(emp);
 		}
+		System.out.println(resultlist.size());
+		Employee returnEmp = resultlist.get(0);
 		
-		
-		
-		
-		
-//		
-//		String s = emp.getEmployeeId();
-//		int age = emp.getAge();
-//		int gender = emp.getGender();
-		
-		
-		
-		return new Employee();
+		return returnEmp;
 		
 		
 		// Queryインスタンスが持っている getSingleResult() インスタンスメソッドの戻り値は java.lang.Object です。

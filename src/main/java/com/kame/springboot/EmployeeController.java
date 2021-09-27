@@ -95,12 +95,10 @@ public class EmployeeController { // コントローラでは、サービスク�
 		case "edit":
 			// 編集だと、employeeIdの値が hiddenで送られきます。employeeIdの値で、検索してエンティティを取得します。
 			// しかし、id　じゃなくて、 employeeId　なので、リポジトリの findByIdの 自動生成するメソッドは、使えません。findById　は、ちなみに引数には、エンティティインスタンスでも良い。
-			// EntityManager と Query を使ったJPQLのメソッドを サービスクラスに作ったので、それを使う。createNativeQueryで
+			// EntityManager と Query を使ったJPQLのメソッドも使えない
 			
-			//エラー
-			 // Employee findEmployee = employeeService.getByEmployeeId(employeeId);
 			
-			Employee findEmployee = employeeService.getByEmployeeId(employeeId);
+			Employee findEmployee = employeeService.getEmp(employeeId);
 			//これを、フォームにバインドする@ModelAttribute("formModel") Employee employee の  
 			// そもそも フォームからの値が入っていた訳ですが、employeeIdしか、hiddenタグで送られていませんでした。 
 			 mav.addObject("formModel", findEmployee); // この１行がとても重要。
@@ -179,6 +177,10 @@ public class EmployeeController { // コントローラでは、サービスク�
 			
 			employee.setEmployeeId(generatedEmpId);  // null　を、生成したIDで上書きする
 			employee.setPhotoId(lastPhotoId); // 0 からさっき、作られて、最後から取得してきたIDで上書きする
+			// ここで、departmentIdをセットする
+			String id = employee.getDepartment().getDepartmentId();
+			employee.setDepartmentId(id);
+			
 			// 更新した employee を引数に当てる サービスのメソッドを呼び出す
 			 boolean result3 = employeeService.empAdd(employee);  // 戻り値は、保存したエンティティです。
 			
