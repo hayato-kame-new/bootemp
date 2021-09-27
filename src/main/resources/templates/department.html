@@ -28,6 +28,7 @@ padding: 5px; color:black; background:#f0f0f0;
 	<p th:text="${msg}"></p>
 	
 	<hr/>
+	<h3 th:text="部署一覧"></h3>
 	<p th:if="${departmentList} == null " th:text="現在登録されている部署はありません。">
 	<table>
 		<tr><th>部署ID</th><th>部署名</th><th></th><th></th></tr>

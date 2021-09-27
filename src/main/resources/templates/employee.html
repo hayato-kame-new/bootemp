@@ -25,9 +25,9 @@ padding: 5px; color:black; background:#f0f0f0;
 </head>
 <body>
 
-<p th:text="${msg}"></p>
-<p th:if="${resultMsf != null}" th:text="${msg}"></p>
+<p th:if="${flashMsg != null}" th:text="${flashMsg}"></p>
 <hr />
+<h3 th:text="社員一覧"></h3>
 
 <p th:if="${employeeList} == null" th:text="現在登録されている社員はいません" ></p>
 

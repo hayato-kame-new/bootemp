@@ -26,7 +26,7 @@ padding: 5px; color:black; background:#f0f0f0;
 <body>
 	
 	<hr/>
-	<p>新規と編集をするページ</p>
+	<h3 th:text="'部署' + (${action == 'depAdd'} ? '新規作成' : '編集') + 'ページ'"></h3>
 	
 	<p th:text="${msg}" ></p>
 	

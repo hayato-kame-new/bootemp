@@ -201,8 +201,19 @@ public class EmployeeService {
 		query.setParameter(7, employee.getPref());
 		query.setParameter(8, employee.getAddress());
 		query.setParameter(9, employee.getDepartmentId());
+		
+		//データベースに保存する時には、java.util.Date から　java.sql.Date に変換すること
+		// 入社日は、必ず入力してもらってるので、nullではない
 		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
-		query.setParameter(11, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
+		
+		// 退職日は、null回避しないといけない	 	
+		java.util.Date utilRetireDate = employee.getRetirementDate();  // 未入力のとき null 入ってる	
+		java.sql.Date sqlRetireDate = null;
+		if(employee.getRetirementDate() != null) {
+			long retireLong = utilRetireDate.getTime();  // nullの時に変換しようとするとエラーここで発生するので
+			sqlRetireDate = new java.sql.Date(retireLong);
+		}
+		query.setParameter(11, sqlRetireDate, TemporalType.DATE);			
 		
 		int result = query.executeUpdate(); // 成功したデータ数が返る
 		if(result != 1) {

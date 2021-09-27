@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 // ファイルのアップロードに必要  org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kame.springboot.component.ViewBean;
 import com.kame.springboot.model.Department;
@@ -48,16 +50,14 @@ public class EmployeeController { // コントローラでは、サービスク�
 	 */
 	@SuppressWarnings("uncheckd")
 	@RequestMapping(value = "/employee", method = RequestMethod.GET)
-	public ModelAndView index(ModelAndView mav) {
+	public ModelAndView index(Model model, ModelAndView mav) {
 		mav.setViewName("employee");
-		mav.addObject("title", "index");
-		mav.addObject("msg", "従業員一覧です");
-		// このメソッドがだめ
-		 // List<Employee> employeeList = (List<Employee>)employeeService.findAllOrderByEmpId();
-		
-		  List<Employee> employeeList = employeeService.getEmpListOrderByAsc();
-		mav.addObject("employeeList", employeeList);
-		
+		mav.addObject("title", "index");		
+		// Flash Scopeから値の取り出し  Model model  を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を Flash Scope　から取り出す
+		String flashMsg = (String) model.getAttribute("flashMsg");  // 返り値がObject型なので、キャストすること
+		mav.addObject("flashMsg", flashMsg);
+		List<Employee> employeeList = employeeService.getEmpListOrderByAsc();
+		mav.addObject("employeeList", employeeList);		
 		return mav;
 	}
 	
@@ -115,6 +115,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 	// spring.servlet.multipart.max-request-size=30MB
 	@RequestMapping(value = "emp_add_edit" , method = RequestMethod.POST)
 	public ModelAndView empAddUpdate(
+			RedirectAttributes redirectAttributes,
 			@RequestParam(name = "action") String action, 
 			@RequestParam(name = "employeeId", required = false)String employeeId,
 			@RequestParam(name = "upload_file", required = false) MultipartFile multipartFile,
@@ -153,8 +154,9 @@ public class EmployeeController { // コントローラでは、サービスク�
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		//データベース操作の結果
-		String resultMsg = "";
+		// リダイレクト先に表示するフラッシュメッセージ。
+		// Flash Scopeにおく、一回のリダイレクトで有効なスコープ、Request Scope より長く、Session Scopeより短いイメージ
+		String flashMsg = "";
 		
 		switch(action) {
 		case "add":
@@ -185,20 +187,15 @@ public class EmployeeController { // コントローラでは、サービスク�
 			 boolean result3 = employeeService.empAdd(employee);  // 戻り値は、保存したエンティティです。
 			
 			 if(!result3) {// 失敗のメッセージ出す
-				resultMsg = "登録できませんでした。";
+				 flashMsg = "登録できませんでした。";
 			}
 			// 成功したら成功のメッセージを
-			 resultMsg = "登録しました。";
+			 flashMsg = "登録しました。";
 			break;
 		}
+		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);
 		
-//		List<String> prefList = viewBean.getPrefList();
-//		mav.addObject("prefList", prefList); 
-//		List<Department> depList = departmentService.findAllOrderByDepId();
-//		mav.addObject("depList", depList);
-		// mav.addObject("title" , action); // いらないかも
-		mav.addObject("resultMsg", resultMsg);
-		// 社員一覧のページにリダイレクトします。
+		// 社員一覧のページにリダイレクトします。フラッシュメッセージつき
 		return new ModelAndView("redirect:/employee");
 	}
 	
