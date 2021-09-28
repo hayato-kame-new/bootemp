@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -95,13 +96,19 @@ public class PhotoService {
 //	 }
 	 
 	 /**
-	  * リレーションを付けた後に作った。こっちは、エラーにならない。こっちを使う。
-	  * @return
+	  * リレーションを付けた後に作った。こっちは、エラーにならない。こっちを使う。まだ一つも登録されていないなど、見つからない時には、最初のだから 1 を返す
+	  * @return getPhotoId
 	  */
 	 public int getLastPhotoId() {
+		 int getPhotoId = 1;
 		 //  createNativeQueryの引数は、JPQLクエリーじゃない 普通のSQL文です PostgreSQL は、カラム名を全て小文字にしてください テーブル名も全て小文字です。photoid にすること
 		 Query query = entityManager.createNativeQuery("select photoid from photo order by photoid desc limit 1");
-		 int getPhotoId = (int)query.getSingleResult();
+		 try {
+			 getPhotoId = (int)query.getSingleResult();			 
+		 } catch (NoResultException e) {
+			 e.printStackTrace();
+			 return 1;  // まだ一つも登録されていないなど、見つからない時には、最初のデータになるから 1 を返す
+		 }
 		 return getPhotoId;  // 最後のphotoidの値を取得して返す
 	 }
 

@@ -30,7 +30,7 @@ div {margin: 0; padding: 0;}
 <hr/>
 	<h3 th:text="'社員' + (${action == 'add'} ? '新規作成' : '編集') + 'ページ'"></h3>
 	
-	<p th:text="${msg}" ></p>
+	
 
 <!-- 新規の規定値がStringやDateの参照型では null　なので、formModel.employeeId    formModel.name  は表示するものはない -->
 <p th:text="${formModel.employeeId}"></p>
@@ -43,6 +43,10 @@ div {margin: 0; padding: 0;}
 <p th:text="${formModel.pref}"></p>
 <p>(<small class="input">※</small>)印は、入力必須です。</p>
 <form action="/emp_add_edit" method="post" enctype="multipart/form-data" th:object="${formModel}">
+
+	<ul>
+		<li th:each="error : ${#fields.detailedErrors()}" class="err" th:text="${error.message}" />
+    </ul>
 
 	<input type="hidden" name="action" th:value="${action}" />
 	<input type="hidden" name="employeeId" th:value="*{employeeId}" />
