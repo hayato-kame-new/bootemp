@@ -74,6 +74,7 @@ div {margin: 0; padding: 0;}
 	<!-- 写真の表示 -->
  	<p>
  	写真: 
+ 	<!-- ? 以降のクエリーパラメータをつけたGETアクセスです。 -->
  	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="300" height="250" /> 
  	</p>
  	<!-- 写真の表示 ここまで -->

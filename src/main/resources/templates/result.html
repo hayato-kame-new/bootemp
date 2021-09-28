@@ -2,7 +2,7 @@
 <html xmlns:th="http://thymeleaf.org">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>Insert title here</title>
+<title th:text="|#{result_page.title} - ${title} |"></title>
 <style>
 h1 {
 font-size: 24px; font-weight:bold; color:gray;}
@@ -26,11 +26,18 @@ padding: 5px; color:black; background:#f0f0f0;
 <body>
 結果ページです
 
-<p th:text="${title}">
+<p th:text="${title}"></p>
+
+<p th:text="${msg}"></p>
 
 
-<p th:text="${msg}">
+<th:block th:if="${#strings.equals(action, 'depAdd')  || #strings.equals(action, 'depEdit')}">
+	<a th:href="@{/department}" >部署一覧ページへ戻る</a>	
+</th:block>
 
+<th:block th:if="${#strings.equals(action, 'add')  || #strings.equals(action, 'edit')}">
+	<a th:href="@{/employee}" >社員一覧ページへ戻る</a>	
+</th:block>
 
 </body>
 </html>

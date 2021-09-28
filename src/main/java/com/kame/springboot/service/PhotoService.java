@@ -112,16 +112,18 @@ public class PhotoService {
 		 return getPhotoId;  // 最後のphotoidの値を取得して返す
 	 }
 
+	 //  社員新規作成の時、photoId が 0 だとこのメソッドは呼ばない 
+	 // 呼び出しもと(PhotoDisplayController)で  呼び出ししないようにする エラ〜メッセージ出るから
 	 public byte[] getPhotoData(int photoId) {
 		 
 		 byte[] byteData = null;
 		 
 		 Query query = entityManager.createNativeQuery("select photodata from photo where photoid = ?");
 		 query.setParameter(1, photoId);
-		 byteData = (byte[]) query.getSingleResult();
 		 
+		 byteData = (byte[]) query.getSingleResult(); 
 		 
-		 return byteData;  // nullが返る可能性もある
+		 return byteData; 
 	 }
 	 
 	public String getMime(int photoId) {

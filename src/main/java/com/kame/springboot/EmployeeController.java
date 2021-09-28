@@ -189,6 +189,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 		mav.setViewName("result");
 		mav.addObject("msg", msg);
 		mav.addObject("title", title);
+		mav.addObject("action", action);
 		return mav;
 	}
 	
