@@ -10,6 +10,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
+import com.kame.springboot.UniqueDepName;
+
 @Entity
 @Table(name="department") // postgresだと、全て小文字なので合わせる
 public class Department {
@@ -25,6 +27,7 @@ public class Department {
 	
 	@NotEmpty  // String型にはこれを使う。@NotNull　だと、String型には効かない unique = true 機能しません　一意のアノテーションもありません カスタムバリデーションを作る必要があります。
 	@Column(name = "departmentname", length = 20, nullable = false, unique = true) // カラム名は、postgreSQL の全て小文字に合わせる
+	@UniqueDepName   //  自作したアノテーション 部署名はユニークでなければいけない
 	private String departmentName;
 	
 	// 相互参照なEntityクラス化する  リレーション

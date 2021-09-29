@@ -92,12 +92,14 @@ div {
  	</div>
  	<!-- 写真の表示 ここまで -->
  	
+ 	
+ 	
  	<!-- 写真のアップロード formタグには enctype="multipart/form-data" が必要  また、リクエストハンドラの引数に MultipartFile  multipartFile が必要-->
  	(<small class="input">※</small>)
  	 <input type="file" name="upload_file" accept=".jpeg, .jpg, .png" />
  	<input type="hidden" name="photoId" th:value="*{photoId}"  />
- 	<div th:if="${#fields.hasErrors('upload_file')}" th:errors="*{upload_file}" th:errorclass="err">
-		</div>
+	<div th:if="${#fields.hasErrors('photoId')}" th:errors="*{photoId}" th:errorclass="err">
+		</div> 	
  	<!-- 写真のアップロード ここまで -->
  	
  	<div>

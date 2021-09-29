@@ -93,6 +93,7 @@ public class Employee {
 //	REFERENCES photo (photoId);
 	
 	@OneToOne
+	@Valid   // ネストしたJavaBeansもチェック対象となる
 	Photo photo;  // @OneToOne  だから、フィールド名は、単数形にしてください。アクセッサも追加すること ゲッター セッター
 	
 	

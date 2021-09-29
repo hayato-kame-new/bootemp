@@ -1,5 +1,6 @@
 package com.kame.springboot.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -165,6 +166,21 @@ public class DepartmentService {
 		return department;		
 	}
 
+	
+	public List<Department> findByDepName(String depName) {
+		// 見つからなかったら nullを返す
+		List<Department> depList = new ArrayList<Department>();  // new して確保すること
+		Query query = entityManager.createQuery("from Department where departmentname = :departmentName");
+		query.setParameter("departmentName", depName);
+		List list = query.getResultList();
+		if(list.size() == 0) {
+			return null; // 存在しない 
+		}else {
+			depList = (List<Department>)list;
+			return depList; // 存在した
+		}
+		
+	}
 
 	
 }
