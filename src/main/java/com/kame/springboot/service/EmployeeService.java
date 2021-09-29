@@ -61,11 +61,11 @@ public class EmployeeService {
 	
 	/**
 	 * これ リレーションついてるから、
-	 * 今回は、 id でなく、employeeId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、
+	 * 今回は、 id でなく、employeeId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、  (findByIdは、エンティティを引数にできる)
 	 * リポジトリとは関係なく、
-	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
+	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。createNativeQueryを使う リレーションをつけてるので createQueryは使わない JPQL文は使わない 普通のSQL文を使う
 	 * サービスクラスに定義して利用する。
-	 * JPQLクエリーの where employeeid のところ、employeeid  という風に全て小文字にすること
+	 * SQLクエリーの where employeeid のところ、employeeid  という風に全て小文字にすること
 	 * @param employeeId
 	 * @return employee
 	 */
@@ -125,7 +125,7 @@ public class EmployeeService {
 		
 		return returnEmp;
 	
-		// List<Employee[]> list = query.getResultList();
+		// List<Employee[]> list = query.getResultList(); // リストにするなら
 	
 	}
 	
@@ -203,6 +203,8 @@ public class EmployeeService {
 		query.setParameter(9, employee.getDepartmentId());
 		
 		//データベースに保存する時には、java.util.Date から　java.sql.Date に変換すること
+		// データベース型に対応するTemporalType列挙型に設定する属性です。指定できる値は，次の3種類です。
+		// TemporalType.DATE：java.sql.Dataと同じです。TemporalType.TIME：java.sql.Timeと同じです。 TemporalType.TIMESTAMP：java.sql.Timestampと同じです。
 		// 入社日は、必ず入力してもらってるので、nullではない
 		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
 		

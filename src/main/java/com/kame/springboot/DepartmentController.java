@@ -62,7 +62,7 @@ public class DepartmentController {
 			@RequestParam(name = "action") String action, // デフォルトだと、必須パラメータで、nullじゃいけないエラー発生 
 			@RequestParam(name = "departmentId", required = false) String departmentId, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
 			@RequestParam(name = "departmentName", required = false) String departmentName, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
-			@ModelAttribute("formModel")Department department, 
+			@ModelAttribute("formModel") Department department,
 			ModelAndView mav) {
 		
 		if(action.equals("depAdd")) {			
@@ -108,7 +108,7 @@ public class DepartmentController {
 			BindingResult result,
 			ModelAndView mav) {
 		
-		ModelAndView res = null;
+		ModelAndView resMav = null;
 		
 		// バリデーションの結果が、どうだったのか
 		if (!result.hasErrors()) {			
@@ -128,15 +128,15 @@ public class DepartmentController {
 				break; // switch文を抜ける
 			}
 			// 部署一覧へリダイレクトする リダイレクトは、リダイレクト先のリクエストハンドラを実行します
-			res =  new ModelAndView("redirect:/department");
-		} else {
+			resMav =  new ModelAndView("redirect:/department");
+		} else { // バリデーションエラーが発生した時
 			mav.setViewName("departmentAddEdit");
 			mav.addObject("msg", "入力エラーが発生しました。");
 			mav.addObject("formModel", department);
 			mav.addObject("action", action);
-			res = mav;
+			resMav = mav;
 		}
-		return res;
+		return resMav;  // mavインスタンスを返してます
 	}
 	
 	/**

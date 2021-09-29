@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 // javax.validation.constraints.NotEmpty  こちらを使う
@@ -40,25 +41,27 @@ public class Employee {
 	@Max(value = 2)
 	private int gender; // 性別 1:男 2:女
 	
-	@Column(name = "photoid")  // 全て小文字のカラム名を指定すること
+	@Column(name = "photoid")  // 全て小文字のカラム名を指定すること フォームからの送信では何もバリデーションつけないこと
 	private int photoId;  // リレーションがあるカラム
 	
 	@Column(name = "zipnumber")  // 全て小文字のカラム名を指定すること
+	@NotEmpty
 	private String zipNumber;
 	
 	@Column(name = "pref")
+	@NotEmpty
 	private String pref;
 	
 	@Column(name = "address")
+	@NotEmpty
 	private String address;
 	
-	
-	
-	@Column(name = "departmentid") // 全て小文字のカラム名を指定すること
-	private String departmentId; // リレーションのあるカラム
+	@Column(name = "departmentid") // 全て小文字のカラム名を指定すること @NotEmpty つけないでくださいフォームからは送りません。
+	private String departmentId; // リレーションのあるカラム フォームのname属性は 下のリレーションになってる
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "hiredate") // 全て小文字のカラム名を指定すること
+	// @Temporal(value = TemporalType.DATE)   // 時刻の値を削除し、日付のみを保持します。
 	private Date hireDate;  // java.util.Date 
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -78,6 +81,7 @@ public class Employee {
 	
 	// @JoinColumn(name="departmentid", insertable=false,  updatable=false) // これを付け足したが、果たして良いのか？？？？
 	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
+	@Valid   // ネストしたJavaBeansもチェック対象となる  JavaBeansにしなきゃいけないのかな Departmentエンティティはすでに JavaBeansとして なのか
 	Department department;  // @ManyToOne  だから、フィールド名は、単数形にしてください。アクセッサも追加すること ゲッター セッター
 	
 	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。

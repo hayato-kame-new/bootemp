@@ -22,10 +22,15 @@ padding: 5px; color:black; background:#f0f0f0;
 }
 .err { color: red; }
 .input { color: red; }
-div {margin: 0; padding: 0;}
+div {
+	margin: 12px 0;
+}
+
 </style>
 </head>
 <body>
+
+<p class="err" th:text="${msg}" ></p>
 
 <hr/>
 	<h3 th:text="'社員' + (${action == 'add'} ? '新規作成' : '編集') + 'ページ'"></h3>
@@ -53,109 +58,117 @@ div {margin: 0; padding: 0;}
 	
 	<p th:unless="${formModel.employeeId} == null" th:text="|社員ID: *{employeeId}|"></p>
 
-	<p>
-		<label for="name">名前(<small class="input">※</small>)</label>: <input type="text" id="name" name="name" th:value="*{name}" />		
-	</p>
+	<div>
+		<label for="name">名前(<small class="input">※</small>)</label>: 
+		<input type="text" id="name" name="name" th:value="*{name}" th:errorclass="err" />
+		<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" th:errorclass="err">
+		</div>				
+	</div>
 	
-	<p>
-		<label for="age">年齢(<small class="input">※</small>)</label>: <input type="text" id="age" name="age" th:value="*{age}" />		
-	</p>
+	<div>
+		<label for="age">年齢(<small class="input">※</small>)</label>: 
+		<input type="text" id="age" name="age" th:value="*{age}" th:errorclass="err" />		
+		<div th:if="${#fields.hasErrors('age')}" th:errors="*{age}" th:errorclass="err">
+		</div>				
+	</div>
 	
-	<p>
+	<div>
 		<label for="gender">性別(<small class="input">※</small>)</label>:
-		<input th:if="*{gender} == 0" type="radio" name="gender" th:value="1" th:text="男性"/>
-		<input th:if="*{gender} == 0" type="radio" name="gender" th:value="2" th:text="女性"/>
-		<input th:if="*{gender} == 1" type="radio" name="gender" th:value="1" th:text="男性" checked="checked"/>
-		<input th:if="*{gender} == 1" type="radio" name="gender" th:value="2" th:text="女性"/>
-		<input th:if="*{gender} == 2" type="radio" name="gender" th:value="1" th:text="男性"/>
-		<input th:if="*{gender} == 2" type="radio" name="gender" th:value="2" th:text="女性" checked="checked"/>
-	</p>
+		<input th:if="*{gender} == 0" type="radio" name="gender" th:value="1" th:text="男性" th:errorclass="err"/>
+		<input th:if="*{gender} == 0" type="radio" name="gender" th:value="2" th:text="女性" th:errorclass="err"/>
+		<input th:if="*{gender} == 1" type="radio" name="gender" th:value="1" th:text="男性" checked="checked" th:errorclass="err"/>
+		<input th:if="*{gender} == 1" type="radio" name="gender" th:value="2" th:text="女性" th:errorclass="err"/>
+		<input th:if="*{gender} == 2" type="radio" name="gender" th:value="1" th:text="男性" th:errorclass="err"/>
+		<input th:if="*{gender} == 2" type="radio" name="gender" th:value="2" th:text="女性" checked="checked" th:errorclass="err"/>
+	    <div th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" th:errorclass="err">
+		</div>
+	</div>
 	
 	<!-- 写真の表示 -->
- 	<p>
+ 	<div>
  	写真: 
  	<!-- ? 以降のクエリーパラメータをつけたGETアクセスです。 -->
- 	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="300" height="250" /> 
- 	</p>
+ 	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="250" height="250" /> 
+ 	</div>
  	<!-- 写真の表示 ここまで -->
  	
  	<!-- 写真のアップロード formタグには enctype="multipart/form-data" が必要  また、リクエストハンドラの引数に MultipartFile  multipartFile が必要-->
  	(<small class="input">※</small>)
- 	<input type="file" name="upload_file" accept=".jpeg, .jpg, .png" />
- 	<input type="hidden" name="photoId" th:value="*{photoId}" />
+ 	 <input type="file" name="upload_file" accept=".jpeg, .jpg, .png" />
+ 	<input type="hidden" name="photoId" th:value="*{photoId}"  />
+ 	<div th:if="${#fields.hasErrors('upload_file')}" th:errors="*{upload_file}" th:errorclass="err">
+		</div>
  	<!-- 写真のアップロード ここまで -->
  	
- 	<p>
+ 	<div>
     	<small>半角数字で ×××-×××× の形式で入力してください。</small><br />
- 		<label for="zipNumber">郵便番号(<small class="input">※</small>)</label>: <input type="text" id="zipNumber" name="zipNumber" th:value="*{zipNumber}" />  
-    </p>
+ 		<label for="zipNumber">郵便番号(<small class="input">※</small>)</label>: 
+ 		<input type="text" id="zipNumber" name="zipNumber" th:value="*{zipNumber}" th:errorclass="err" />
+ 		<p th:if="${#fields.hasErrors('zipNumber')}" th:errors="*{zipNumber}" th:errorclass="err">
+		</p>  
+    </div>
  	
- 	<p>
+ 	<div>
  		<label for="pref"  >都道府県(<small class="input">※</small>)</label>: 
- 		<select name="pref" size="1">
- 			<!-- 新規の時の表示 -->
- 			<th:block th:if="${formModel.pref == null}">
-	 			<th:block th:each="prefItem : ${prefList}">
-	 				<option style="width:150px;" th:value="${prefItem}" th:text="${prefItem}" ></option>
-	 			</th:block>		
-		    </th:block>
-		    <!-- 編集の時の表示 th:unless -->
-		    <th:block th:unless="${formModel.pref == null}">
-		    	<th:block th:each="prefItem : ${prefList}">
-		        	<th:block th:if="${#strings.equals(formModel.pref, prefItem)}">
-		        		<option style="width:150px;" th:value="${prefItem}" th:text="${prefItem}" selected ></option>
-		        	</th:block>	
-		        	<th:block th:unless="${#strings.equals(formModel.pref, prefItem)}">
-		        			<option style="width:150px;" th:value="${prefItem}" th:text="${prefItem}"  ></option>
-		        	</th:block>	
-	    		</th:block>
-		    </th:block>	 			
+ 		<select name="pref" size="1" th:errorclass="err">					
+	 				<option th:each="prefItem : ${prefList}" 
+	 				 th:value="${prefItem}" th:text="${prefItem}" th:selected = "${prefItem == selectedPref}">	 				 
+	 				 </option> 				    			
  		</select>
- 	</p>
- 	
- 	<p>
-		<label for="address">住所(<small class="input">※</small>)</label>: <input type="text" id="address" name="address" th:value="*{address}" />		
-	</p>
+ 		 <p th:if="${#fields.hasErrors('pref')}" th:errors="*{pref}" th:errorclass="err"> </p>
+		
  	</div>
- 	<p >		
- 		<label for="departmentId">所属(<small class="input">※</small>)</label>: 
-		<!-- ポイント・・・リレーションがあるので、name="department.departmentId"と設定します -->
- 		<select name="department.departmentId" size="1">
- 			<!-- 新規の時の表示 -->
- 			<th:block th:if="${formModel.departmentId == null}">
- 				<th:block  th:each="obj : ${depList}">	
-	 				<option style="width:150px;"  th:value="${obj.departmentId}" th:text="${obj.departmentName}"> </option>
- 			 	 </th:block>
- 			 </th:block>
- 			<!-- 編集の時の表示 th:unless -->
- 			<th:block th:unless="${formModel.departmentId == null}">
-	 			<th:block  th:each="obj : ${depList}">	
-	 				<th:block th:if="${#strings.equals(formModel.departmentId, obj.departmentId)}" >
-				 		<option style="width:150px;" th:value="${obj.departmentId}" th:text="${obj.departmentName}" selected > </option>			 			
-	 				</th:block>
-	 				<th:block th:unless="${#strings.equals(formModel.departmentId, obj.departmentId)}" >
-	 					<option style="width:150px;" th:value="${obj.departmentId}" th:text="${obj.departmentName}" > </option>
-	 			 	</th:block>
-	 			</th:block>
- 			</th:block>
- 		</select>		
- 	</p>
  	
- 	<p>
+ 	<div>
+		<label for="address">住所(<small class="input">※</small>)</label>: 
+		<input type="text" id="address" name="address" th:value="*{address}" th:errorclass="err"/>
+		<div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" th:errorclass="err">
+		</div>	
+	</div>
+ 	<!-- ポイント・・・ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつけること リレーションがあるので、name="department.departmentId"と設定します -->
+ 	
+ 	<!-- name="department.departmentId" には、hiddenで送るのかな? 
+ 	送らないと、バリデーションでエラーになるから送らないとだめだな バリデーションをかけないようにすればいいか 外した。
+ 	 name="departmentId" に hiddenでおくれば良いのかな いや、送らなくてもコントローラでリレーションから取得して、セットしてるからいいか　-->
+ 	<div>
+ 		<label for="departmentId">所属(<small class="input">※</small>)</label>: 
+ 		<!-- <select name="department.departmentId" size="1" th:errorclass="err">
+ 			<th:block th:each="dep : ${depMap}">
+	 			<option th:value="${dep.key}" th:text="${dep.value}" th:selected = "${dep.key == selectedDep}"></option>		    			
+	 		</th:block>
+ 		</select>
+ 		<div th:if="${#fields.hasErrors('department.departmentId')}" th:errors="*{department.departmentId}" th:errorclass="err">
+		</div>		 -->
+		
+		<select name="departmentId" size="1" th:errorclass="err">
+		<th:block th:each="dep : ${depMap}">
+	 			<option th:value="${dep.key}" th:text="${dep.value}" th:selected = "${dep.key == selectedDep}"></option>		    			
+	 		</th:block>
+ 		</select>
+ 		<div th:if="${#fields.hasErrors('departmentId')}" th:errors="*{department.departmentId}" th:errorclass="err">
+		</div>
+		
+ 	</div>
+ 	
+ 	<div>
     	<small>半角数字で ××××-××-×× の形式で入力してください。 例( 2016-03-20 )</small><br />
     	<label for="hireDate">入社日(<small class="input">※</small>)</label>: 
-    	<input type="text" name="hireDate" th:value="*{hireDate}" >
- 	</p>
+    	 <input type="text" name="hireDate" th:value="${#dates.format(formModel.hireDate, 'yyyy-MM-dd')}" th:errorclass="err"> 
+    	<div th:if="${#fields.hasErrors('hireDate')}" th:errors="*{hireDate}" th:errorclass="err">
+		</div>
+ 	</div>
  	
- 	<p >
+ 	<div>
     	<small>半角数字で ××××-××-×× の形式で入力してください。 例( 2016-03-20 )</small><br />
     	<label for="retirementDate">退社日</label>: 
-    	<input type="text" name="retirementDate" th:value="${#dates.format(formModel.retirementDate, 'yyyy-MM-dd')}">
- 	</p>
+    	<input type="text" name="retirementDate" th:value="${#dates.format(formModel.retirementDate, 'yyyy-MM-dd')}" th:errorclass="err">
+    	<div th:if="${#fields.hasErrors('retirementDate')}" th:errors="*{retirementDate}" th:errorclass="err">
+		</div>
+ 	</div>
  	
- 	<p>
+ 	<div>
  	<input type="submit" value="送信" />
-	</p>
+	</div>
 </form>
 
 <!-- リンク式を使ってキャンセルする p171 -->
