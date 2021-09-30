@@ -155,7 +155,7 @@ div {
  	<div>
     	<small>半角数字で ××××-××-×× の形式で入力してください。 例( 2016-03-20 )</small><br />
     	<label for="hireDate">入社日(<small class="input">※</small>)</label>: 
-    	 <input type="text" name="hireDate" th:value="${#dates.format(formModel.hireDate, 'yyyy-MM-dd')}" th:errorclass="err"> 
+    	 <input type="date" name="hireDate" th:value="${#dates.format(formModel.hireDate, 'yyyy-MM-dd')}" th:errorclass="err"> 
     	<div th:if="${#fields.hasErrors('hireDate')}" th:errors="*{hireDate}" th:errorclass="err">
 		</div>
  	</div>
@@ -163,7 +163,7 @@ div {
  	<div>
     	<small>半角数字で ××××-××-×× の形式で入力してください。 例( 2016-03-20 )</small><br />
     	<label for="retirementDate">退社日</label>: 
-    	<input type="text" name="retirementDate" th:value="${#dates.format(formModel.retirementDate, 'yyyy-MM-dd')}" th:errorclass="err">
+    	<input type="date" name="retirementDate" th:value="${#dates.format(formModel.retirementDate, 'yyyy-MM-dd')}" th:errorclass="err">
     	<div th:if="${#fields.hasErrors('retirementDate')}" th:errors="*{retirementDate}" th:errorclass="err">
 		</div>
  	</div>

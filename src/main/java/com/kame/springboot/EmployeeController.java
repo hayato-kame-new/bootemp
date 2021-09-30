@@ -2,12 +2,10 @@ package com.kame.springboot;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -123,8 +121,6 @@ public class EmployeeController { // コントローラでは、サービスク�
 	public ModelAndView empAddUpdate(@RequestParam(name = "action") String action,
 			@RequestParam(name = "employeeId", required = false) String employeeId,
 		    @RequestParam(name = "upload_file", required = false) MultipartFile multipartFile,
-		     @RequestParam(name = "hireDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date hireDate,
-			 @RequestParam(name = "retirementDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date retirementDate,
 			@ModelAttribute("formModel") @Validated Employee employee, BindingResult result, ModelAndView mav) {
 
 		ModelAndView resMav = null;

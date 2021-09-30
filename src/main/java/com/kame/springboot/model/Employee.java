@@ -13,8 +13,11 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 // javax.validation.constraints.NotEmpty  こちらを使う
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
-import org.springframework.format.annotation.DateTimeFormat;  
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.Nullable;  
 
 // Departmentエンティティ  Photoエンティティの従エンティティ(子エンティティ)
 
@@ -28,7 +31,7 @@ public class Employee {
 	
 	
 	@Column(name = "name", length=10485760 )
-	@NotEmpty
+	@NotEmpty(message="名前を入力してください")
 	private String name;
 	
 	@Column(name = "age")
@@ -37,23 +40,24 @@ public class Employee {
 	private int age;
 	
 	@Column(name = "gender")
-	@Min(value = 1)
-	@Max(value = 2)
+	@Min(value=1, message = "性別を選択してください")
+	@Max(value=2, message = "性別を選択してください")
 	private int gender; // 性別 1:男 2:女
 	
 	@Column(name = "photoid")  // 全て小文字のカラム名を指定すること フォームからの送信では何もバリデーションつけないこと
 	private int photoId;  // リレーションがあるカラム
 	
 	@Column(name = "zipnumber")  // 全て小文字のカラム名を指定すること
-	@NotEmpty
+	@NotEmpty(message="郵便番号を入力してください")
+	@Pattern(regexp = "^[0-9]{3}-[0-9]{4}$", message = "000-0000 の形式で入力してください")
 	private String zipNumber;
 	
 	@Column(name = "pref")
-	@NotEmpty
+	@NotEmpty(message = "都道府県選択してください")
 	private String pref;
 	
 	@Column(name = "address")
-	@NotEmpty
+	@NotEmpty(message = "住所を入力してください")
 	private String address;
 	
 	@Column(name = "departmentid") // 全て小文字のカラム名を指定すること @NotEmpty つけないでくださいフォームからは送りません。
@@ -61,11 +65,12 @@ public class Employee {
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "hiredate") // 全て小文字のカラム名を指定すること
-	// @Temporal(value = TemporalType.DATE)   // 時刻の値を削除し、日付のみを保持します。
-	private Date hireDate;  // java.util.Date 
+	@NotNull(message="入社日を入力してください")  // 日付には、@NotNullを使ってください
+	private Date hireDate; 
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "retirementdate", nullable = true) // 全て小文字のカラム名を指定すること
+	@Nullable  // org.springframework.langパッケージの アノテーション使って良いのかな
 	private Date retirementDate;  // java.util.Date 
 
 	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Departmentエンティティに対して、従エンティティです。
