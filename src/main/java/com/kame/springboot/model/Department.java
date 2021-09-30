@@ -10,7 +10,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 
-import com.kame.springboot.UniqueDepName;
+import com.kame.springboot.annotation.UniqueDepName;
 
 @Entity
 @Table(name="department") // postgresだと、全て小文字なので合わせる

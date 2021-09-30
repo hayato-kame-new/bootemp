@@ -1,4 +1,4 @@
-package com.kame.springboot;
+package com.kame.springboot.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -10,7 +10,7 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 import javax.validation.ReportAsSingleViolation;
 
-
+import com.kame.springboot.validator.DepartmentNameValidator;
 
 
 @Documented

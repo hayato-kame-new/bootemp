@@ -1,16 +1,14 @@
-package com.kame.springboot;
+package com.kame.springboot.validator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
+import com.kame.springboot.annotation.UniqueDepName;
 import com.kame.springboot.service.DepartmentService;
 
 
-
-@Component
 public class DepartmentNameValidator implements ConstraintValidator<UniqueDepName, String> {
 
 	@Autowired
@@ -23,6 +21,8 @@ public class DepartmentNameValidator implements ConstraintValidator<UniqueDepNam
 		ConstraintValidator.super.initialize(constraintAnnotation);
 	}
 
+	
+	//NULLチェックを行い、NULLだった場合はtrueを返してください。それが決まりです。なぜなら、NULLチェックは@NotNullを併用して行うことになっているからです。
 
 	// 引数は、部署名
 	@Override
@@ -30,7 +30,6 @@ public class DepartmentNameValidator implements ConstraintValidator<UniqueDepNam
 		if(value == null || value.isEmpty()) {
 			return false;
 		}
-
         return departmentService.findByDepName(value) == null;
 	}
 

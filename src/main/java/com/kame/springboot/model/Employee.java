@@ -17,12 +17,15 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.lang.Nullable;  
+import org.springframework.lang.Nullable;
+
+import com.kame.springboot.annotation.DayCheck;  
 
 // Departmentエンティティ  Photoエンティティの従エンティティ(子エンティティ)
 
 @Entity
 @Table(name = "employee")
+@DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")
 public class Employee {
 	
 	@Id
@@ -70,7 +73,7 @@ public class Employee {
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@Column(name = "retirementdate", nullable = true) // 全て小文字のカラム名を指定すること
-	@Nullable  // org.springframework.langパッケージの アノテーション使って良いのかな
+	 @Nullable  // org.springframework.langパッケージの アノテーション 先に、相関関係のバリデーションの方が行われるらしい
 	private Date retirementDate;  // java.util.Date 
 
 	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Departmentエンティティに対して、従エンティティです。
@@ -139,8 +142,8 @@ public class Employee {
 		this.departmentId = departmentId;
 		this.hireDate = hireDate;
 		this.retirementDate = retirementDate;
-	//	this.department = department;
-	//	this.photo = photo;
+//		this.department = department; 
+//		this.photo = photo;
 	}
 	
 	/**
