@@ -47,8 +47,7 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 	      }else{
 	    	  // フォームクラスから比較対象項目の値を得る SpringのBeanWrapperというインタフェースを使います
 	    	  BeanWrapper beanWrapper = new BeanWrapperImpl(value);
-//	    	  String hireString = (String) beanWrapper.getPropertyValue(hireDateProperty);  // 未入力だと null
-//	    	  String retireString = (String) beanWrapper.getPropertyValue(retirementDateProperty);  // 未入力だと null
+
 	    	  
 	    	  Date date1 =  (Date) beanWrapper.getPropertyValue(hireDateProperty);  // 未入力だと null
 	    	  Date date2 =  (Date) beanWrapper.getPropertyValue(retirementDateProperty);  // 未入力だと null
@@ -56,19 +55,7 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 	    	  if (date1 == null || date2 == null) {
 	    		  return true;  // ここでメソッドの終了 引数をメソッドの呼び出しもとに返す returnキーワード	    		  
 	    	  }
-	    	//  得た値（日付文字列）からDateオブジェクトを生成する nullだと、ParseException例外発生するから、例外発生したら、キャッチしてtrueを返すようにする つまり、バリデーションエラーにならないでスルーした
-	    	 //  Localオブジェクト生成で例外が発生したらtrueを返す
-//	    	  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//	    	  Date formatDateHire = null;
-//    		  Date formatdateRetire = null;
-//	    	  try {
-//	    		  formatDateHire = sdf.parse(hireString);  // nullだと ParseException
-//	    		 formatdateRetire = sdf.parse(retireString); // nullだと ParseException
-//	    	  } catch (Exception e) {
-//	    		  // returnキーワードを書かないと、呼び出しもとに戻らないので、 res = true; では駄目です。 returnキーワードが必要
-//	    		  return true; //  入社日は、nullも入ってきてる@NotNullまだ効いてない @NotNullより先にこの相関関係のバリデーション実行される？ 退社日は、null の可能性あるから、比較する必要はないので trueを返す
-//	    		  // return で、呼び出しもとに戻り、これより下の行は実行されない
-//	    	  }
+
 	    	  // 退職日を前にしているので、退職日>=入社日の時は、0以上の数値が返り、そうでないときはマイナス数値が返る
 	    	  if(date2.compareTo(date1) >= 0) { 
 	    		  ret = true;  // スルーする
@@ -81,12 +68,12 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 	    		  ret = false;  // エラーメッセージを出す。
 	    	  }
 	     }
-	      return false;
+	      return ret;
 		// 相関チェックのアノテーションは、Formクラスのクラス定義の部分に付与する  引数として項目名を渡す
 		
 
 	      
-	      
+	 // 単数チェックの時     
 //		// 入社日は、null許可しない。必須。そもそも nullだと、バリデーションの@NotNullでチェックされるので、いらないとかもしれないが、先にどちらが適応されるかわからないので一応つける。
 //		if (value.getHireDate() == null) {
 //			return true;

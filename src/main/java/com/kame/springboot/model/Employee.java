@@ -17,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.lang.Nullable;
 
 import com.kame.springboot.annotation.DayCheck;  
@@ -52,7 +53,7 @@ public class Employee {
 	
 	@Column(name = "zipnumber")  // 全て小文字のカラム名を指定すること
 	@NotEmpty(message="郵便番号を入力してください")
-	@Pattern(regexp = "^[0-9]{3}-[0-9]{4}$", message = "000-0000 の形式で入力してください")
+	@Pattern(regexp = "^[0-9]{3}-[0-9]{4}$", message = "郵便番号は半角数字000-0000 の形式で入力してください")
 	private String zipNumber;
 	
 	@Column(name = "pref")
@@ -66,7 +67,8 @@ public class Employee {
 	@Column(name = "departmentid") // 全て小文字のカラム名を指定すること @NotEmpty つけないでくださいフォームからは送りません。
 	private String departmentId; // リレーションのあるカラム フォームのname属性は 下のリレーションになってる
 	
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	// メッセージプロパティに、  typeMismatch.java.util.Date=yyyy/MM/dd形式で入力してください     を追加すること！！これで、TypeMismatchException発生した時に、出る長いエラーメッセージを、上書きして変更できる
+	@DateTimeFormat(iso = ISO.DATE, fallbackPatterns = { "yyyy/MM/dd", "yyyy-MM-dd" })  //iso = ISO.DATE だと 最も一般的な ISO 日付形式 yyyy-MM-dd  たとえば、"2000-10-31"
 	@Column(name = "hiredate") // 全て小文字のカラム名を指定すること
 	@NotNull(message="入社日を入力してください")  // 日付には、@NotNullを使ってください
 	private Date hireDate; 

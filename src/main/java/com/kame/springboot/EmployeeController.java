@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,10 @@ public class EmployeeController { // コントローラでは、サービスク�
 	// コントローラでは、 ビューのコンポーネントをインスタンスとしてもつ
 	@Autowired
 	ViewBean viewBean;
+	
+	  // ファイルのアップロード時のパターンチェック
+    private final java.util.regex.Pattern PATTERN_IMAGE = java.util.regex.Pattern.compile("^image\\/(jpeg|jpg|png)$");
+
 
 	/**
 	 * 社員一覧表示
@@ -128,15 +133,37 @@ public class EmployeeController { // コントローラでは、サービスク�
 		String title = "成功";
 		String msg = "データベースへ登録に成功しました。";
 		
-		// もし、新規の時に、ファイルをアップロードしない時には、エラ〜メッセージに追加し、エラーメッセージをフォームのところで表示したい。
-		// 編集時には、アップロードをしても、しなくても良いようにするには。 後で、テンプレートのフィールドに追加して
-		// result.getObjectName()  で "formModel" が取れる
+		// result の errors の 
+		
+		List<ObjectError> list =  result.getAllErrors();
+//		for(ObjectError error : list) {
+//			error.
+//		}
+		
+		
+		boolean part = multipartFile.isEmpty(); // アップロードしてこないと true 空のファイルでも trueとなり、空ファイルの判定もできる
+		long size = multipartFile.getSize(); // 3633674 ファイルアップロードしない時には、 0 と入ってきてる
+		String mime = multipartFile.getContentType(); // contentTypeを取得します。 "image/jpeg" など入ってる アップロードをしてこない時は
+														// application/octet-stream となる
+
+		// アノテーションをつけずに(つけられないから)、エラ〜メッセージを追加して表示したい
+		// もし、新規の時に、ファイルをアップロードしない時には、エラーメッセージに追加し、エラーメッセージをフォームのところで表示。
+		// 編集時には、アップロードをしても、しなくても良い
+		// FieldErrorオブジェクトを生成して、ResultインスタンスのインスタンスメソッドaddErrorで エラーメッセージに追加
 		if (action.equals("add") && multipartFile.isEmpty()) {  // アノテーションをつけずに、エラ〜メッセージを追加して表示したい
-			// エラーメッセージに追加する
-			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像ファイルを選択してください");
+			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像ファイルを選択してください"); //result.getObjectName()  で "formModel" が取れる
 			result.addError(fieldError);
-			
-			
+		}
+		// ファイルのアップロードがあり、かつ、パターンチェックに合ってない時は、エラーメッセージに追加する
+		if(!multipartFile.isEmpty() &&  !PATTERN_IMAGE.matcher(mime).matches()) {
+			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像の形式はJPEGまたはJPGおよびPNGにしてください");
+			result.addError(fieldError);
+		}
+		
+		if ( multipartFile.isEmpty()) {  // アノテーションをつけずに、エラ〜メッセージを追加して表示したい
+			// エラーメッセージに追加する
+			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像ファイルを選択してください2");
+			result.addError(fieldError);
 		}
 
 		// hasErrorsメソッドで囲う処理を
@@ -147,10 +174,10 @@ public class EmployeeController { // コントローラでは、サービスク�
 			// アップロードをしてきたのか、isEmpty()で判断できる
 			// file.isEmpty()メソッド。値がnullの場合trueとなるが、ファイルサイズが0の場合もtrueとなるため、空ファイルの判定もできる。
 			// 新規の時には、写真のアップロードが必須なので、0 だったら、だめ、とするようにしないといけない
-			boolean part = multipartFile.isEmpty(); // アップロードしてこないと true 空のファイルでも trueとなり、空ファイルの判定もできる
-			long size = multipartFile.getSize(); // 3633674 ファイルアップロードしない時には、 0 と入ってきてる
-			String mime = multipartFile.getContentType(); // contentTypeを取得します。 "image/jpeg" など入ってる アップロードをしてこない時は
-															// application/octet-stream となる
+//			boolean part = multipartFile.isEmpty(); // アップロードしてこないと true 空のファイルでも trueとなり、空ファイルの判定もできる
+//			long size = multipartFile.getSize(); // 3633674 ファイルアップロードしない時には、 0 と入ってきてる
+//			String mime = multipartFile.getContentType(); // contentTypeを取得します。 "image/jpeg" など入ってる アップロードをしてこない時は
+//															// application/octet-stream となる
 
 			InputStream is = null;
 			byte[] photoData = null;
@@ -198,7 +225,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 					// employee.setDepartmentId(getDepartmentId); // フォームから送られてきた時点ではdepartmentIdの値は 規定値(String型の初期値)の null
 																// になってるので、リレーションの値を取得してきて、その値で更新する
 					Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
-					employee.setDepartment(department);  // リレーションに設定しました。
+					employee.setDepartment(department);  // リレーションに設定しました。これで、リレーションのdepartment.deprtmentId や department.departmentName　にデータをセットできてるはず
 					
 					
 					// データベースに登録する 引数のemployeeは、フォームから送られたデータが入ってて、さらに、employeeId photoId
@@ -229,12 +256,11 @@ public class EmployeeController { // コントローラでは、サービスク�
 			msg = "入力エラーが発生しました。";
 
 			mav.setViewName("employeeAddEdit");
-			
+			// 表示用
 			List<String> prefList = viewBean.getPrefList();
 			mav.addObject("prefList", prefList);
 			mav.addObject("selectedPref" , employee.getPref());
-			
-			
+			// 表示用
 			List<Department> depList = departmentService.findAllOrderByDepId();
 			// depList  を引数にして呼び出す 表示のためにMapを取得する
 			Map<String, String> depMap = viewBean.getDepartmentMap(depList); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}

@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,6 +17,9 @@ import javax.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 
 import com.kame.springboot.component.LogicBean;
 import com.kame.springboot.model.Employee;
@@ -224,4 +228,24 @@ public class EmployeeService {
 		}
 		return true;
 	}
+	
+	// エラーメッセージを取得する 全部を
+	 public String addAllErrors(BindingResult result) {
+	        String errorMessages = "";
+	        for (ObjectError error : result.getAllErrors()) {
+	            // ここでメッセージを取得する。
+	            errorMessages += error.getDefaultMessage();
+	        }
+	        return errorMessages;
+	    }
+	
+	// アノテーションなしに行ったすべてのエラーをBindingResultに追加する。
+	 public static BindingResult addAllErrors(BindingResult bindingResult, Map<String, String> errorMap) {
+	        for (Map.Entry<String, String> entry : errorMap.entrySet()) {
+	            FieldError fieldError = new FieldError(
+	                           bindingResult.getObjectName(), entry.getKey(), entry.getValue());
+	            bindingResult.addError(fieldError);
+	        }
+	        return bindingResult;
+	    }
 }

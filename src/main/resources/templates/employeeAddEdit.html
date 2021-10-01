@@ -87,7 +87,7 @@ div {
 	<!-- 写真の表示 -->
  	<div>
  	写真: 
- 	<!-- ? 以降のクエリーパラメータをつけたGETアクセスです。 -->
+ 	<!-- ? 以降のクエリーパラメータをつけたGETアクセスです。  /getImg/?photo=1   とかのクエリー文字列つきのURLになる -->
  	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="250" height="250" /> 
  	</div>
  	<!-- 写真の表示 ここまで -->
