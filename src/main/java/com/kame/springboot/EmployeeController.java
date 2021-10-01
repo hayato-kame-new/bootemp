@@ -10,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,18 +83,14 @@ public class EmployeeController { // コントローラでは、サービスク�
 
 		mav.setViewName("employeeAddEdit");
 		mav.addObject("action", action);
-		
-		List<String> prefList = viewBean.getPrefList();
-		mav.addObject("prefList", prefList);
-		mav.addObject("selectedPref" , employee.getPref());
-		
-		List<Department> depList = departmentService.findAllOrderByDepId();
-		// depList  を引数にして呼び出す 表示のためにMapを取得する
-		
-		Map<String, String> depMap = viewBean.getDepartmentMap(depList); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
+		// 表示用
+		Map<Integer, String> prefMap = viewBean.getPrefMap();
+		mav.addObject("prefMap", prefMap);
+		mav.addObject("selectedPref" , employee.getPref()); // 選択済みのデータを送る  新規だと、employee.getPref() は null
+		// 表示用
+		Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
 		mav.addObject("depMap", depMap);
-	// 	String depId = employee.getDepartment().getDepartmentId();
-	//	mav.addObject("selectedDep", depId);
+		mav.addObject("selectedDepartmentId" , employee.getDepartmentId()); // 選択済みのデータを送る  新規だと、employee.getDepartmentId() は null
 		
 		mav.addObject("title", action);
 
@@ -107,21 +102,28 @@ public class EmployeeController { // コントローラでは、サービスク�
 		case "edit":
 			// 編集だと、employeeIdの値が hiddenで送られてくる
 			Employee findEmployee = employeeService.getEmp(employeeId);
-			// @ModelAttribute("formModel") Employee employee
-			// のところは空の(フィールドが規定値の)Employeeインスタンスだから キー "formModel" 値を findEmployee でセットする
-			mav.addObject("formModel", findEmployee); // 更新の時の画面表示に この１行必要
+			mav.addObject("formModel", findEmployee);  // 更新の時の この１行必要
 			break;
 		}
 		return mav;
 	}
 
-	// 新規 編集する
-	// Spring
-	// Bootでは、デフォルトでファイルサイズの上限が1MB(1024*1024=1048576bytes)となっています。アップロードしたファイルのサイズがこれより大きい場合、MaxUploadSizeExceededExceptionがスローされ、リクエストは処理されません。
+	
+	// SpringBootでは、デフォルトでファイルサイズの上限が1MB(1024*1024=1048576bytes)となっています。アップロードしたファイルのサイズがこれより大きい場合、MaxUploadSizeExceededExceptionがスローされ、リクエストは処理されません。
 	// propertiesファイルの場合 以下の２行を加えてください。
 	// spring.servlet.multipart.max-file-size=30MB
 	// spring.servlet.multipart.max-request-size=30MB
-	// 列挙型 DateTimeFormat.ISO　でパターンが列挙されてるので選んで使うこと  @DateTimeFormat(pattern = "yyyy-MM-dd") にすると、バリデーション後表示する際に表示がおかしいので使わない
+	/**
+	 * 新規登録 編集する
+	 * 
+	 * @param action
+	 * @param employeeId
+	 * @param multipartFile
+	 * @param employee
+	 * @param result
+	 * @param mav
+	 * @return mav
+	 */
 	@RequestMapping(value = "emp_add_edit", method = RequestMethod.POST)
 	public ModelAndView empAddUpdate(@RequestParam(name = "action") String action,
 			@RequestParam(name = "employeeId", required = false) String employeeId,
@@ -133,24 +135,15 @@ public class EmployeeController { // コントローラでは、サービスク�
 		String title = "成功";
 		String msg = "データベースへ登録に成功しました。";
 		
-		// result の errors の 
-		
-		List<ObjectError> list =  result.getAllErrors();
-//		for(ObjectError error : list) {
-//			error.
-//		}
-		
-		
+		// アップロードされたファイルは「org.springframework.web.multipart.MultipartFile」で受け取ります。
+		// file.isEmpty()メソッド。値がnullの場合trueとなるが、ファイルサイズが0の場合もtrueとなるため、空ファイルの判定もできる。
 		boolean part = multipartFile.isEmpty(); // アップロードしてこないと true 空のファイルでも trueとなり、空ファイルの判定もできる
 		long size = multipartFile.getSize(); // 3633674 ファイルアップロードしない時には、 0 と入ってきてる
 		String mime = multipartFile.getContentType(); // contentTypeを取得します。 "image/jpeg" など入ってる アップロードをしてこない時は
 														// application/octet-stream となる
-
-		// アノテーションをつけずに(つけられないから)、エラ〜メッセージを追加して表示したい
-		// もし、新規の時に、ファイルをアップロードしない時には、エラーメッセージに追加し、エラーメッセージをフォームのところで表示。
-		// 編集時には、アップロードをしても、しなくても良い
+		// 新規の時に、ファイルをアップロード必須にする、アノテーションをつけずに(つけられないから)、エラーメッセージに追加し、エラーメッセージをフォームのところで表示。
 		// FieldErrorオブジェクトを生成して、ResultインスタンスのインスタンスメソッドaddErrorで エラーメッセージに追加
-		if (action.equals("add") && multipartFile.isEmpty()) {  // アノテーションをつけずに、エラ〜メッセージを追加して表示したい
+		if (action.equals("add") && multipartFile.isEmpty()) {  // アノテーションをつけずに、エラーメッセージを追加して表示
 			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像ファイルを選択してください"); //result.getObjectName()  で "formModel" が取れる
 			result.addError(fieldError);
 		}
@@ -159,25 +152,9 @@ public class EmployeeController { // コントローラでは、サービスク�
 			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像の形式はJPEGまたはJPGおよびPNGにしてください");
 			result.addError(fieldError);
 		}
-		
-		if ( multipartFile.isEmpty()) {  // アノテーションをつけずに、エラ〜メッセージを追加して表示したい
-			// エラーメッセージに追加する
-			FieldError fieldError = new FieldError(result.getObjectName(), "photoId", "画像ファイルを選択してください2");
-			result.addError(fieldError);
-		}
 
-		// hasErrorsメソッドで囲う処理を
+		// バリデーションエラーが発生していないのなら、処理へ進み、    バリデーションエラー発生したら、再入力してもらう入力画面へ送る
 		if (!result.hasErrors()) { // バリデーションエラーが発生しないので、処理できる
-
-			// アップロードされたファイルは「org.springframework.web.multipart.MultipartFile」で受け取ります。
-
-			// アップロードをしてきたのか、isEmpty()で判断できる
-			// file.isEmpty()メソッド。値がnullの場合trueとなるが、ファイルサイズが0の場合もtrueとなるため、空ファイルの判定もできる。
-			// 新規の時には、写真のアップロードが必須なので、0 だったら、だめ、とするようにしないといけない
-//			boolean part = multipartFile.isEmpty(); // アップロードしてこないと true 空のファイルでも trueとなり、空ファイルの判定もできる
-//			long size = multipartFile.getSize(); // 3633674 ファイルアップロードしない時には、 0 と入ってきてる
-//			String mime = multipartFile.getContentType(); // contentTypeを取得します。 "image/jpeg" など入ってる アップロードをしてこない時は
-//															// application/octet-stream となる
 
 			InputStream is = null;
 			byte[] photoData = null;
@@ -215,21 +192,9 @@ public class EmployeeController { // コントローラでは、サービスク�
 															// になってるので、生成したIDで上書きする
 
 					employee.setPhotoId(lastPhotoId); // フォームから送られてきた時点ではphotoIdの値は 規定値(int型の初期値)の 0
-														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを取得してきたので、それで上書きする
-					
-					// ここ直してください！！！ フォームでは、リレーションじゃなくて、普通のからむにデータ尾を送ってるから
-					
-					// String getDepartmentId = employee.getDepartment().getDepartmentId(); // リレーションの値を取得してきて、
-					
-					// これいらない 逆にリレーションにセットしないと。
-					// employee.setDepartmentId(getDepartmentId); // フォームから送られてきた時点ではdepartmentIdの値は 規定値(String型の初期値)の null
-																// になってるので、リレーションの値を取得してきて、その値で更新する
+														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを取得してきたので、それで上書きする					
 					Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
 					employee.setDepartment(department);  // リレーションに設定しました。これで、リレーションのdepartment.deprtmentId や department.departmentName　にデータをセットできてるはず
-					
-					
-					// データベースに登録する 引数のemployeeは、フォームから送られたデータが入ってて、さらに、employeeId photoId
-					// departmentId を上書きしている(更新している)インスタンスになってる
 					success = employeeService.empAdd(employee);
 					if (!success) { // 失敗
 						msg = "社員データの新規登録に失敗しました。"; // 結果ページへの出力のため
@@ -238,11 +203,31 @@ public class EmployeeController { // コントローラでは、サービスク�
 					}
 					// ここまできたら成功
 				}
-				break;
+				break; // case句を抜ける
 			case "edit":
-				// 編集では、ファイルのアップロードは無いかもしれない。
-
-				break;
+				// 編集では、ファイルのアップロードは無いかもしれない。なくてもOKにしてる
+				// もし、ファイルアップロードあれば、編集では、employee.getPhotoId() で、photoId を取得できるので、上書きする photoテーブルの更新
+				if(!multipartFile.isEmpty()) {
+					success = photoService.photoDataUpdate(employee.getPhotoId(), photoData, mime); // photoテーブルの更新
+					if(!success) {
+						msg = "写真データの更新に失敗しました。";
+						title = "失敗";
+						break; // case句を出る
+					}
+					// アップロードがあり、photoテーブルの更新が成功  
+				}
+				//フォームから送られてきた、employeeには、更新したデータがセットされてる employeeテーブルの更新 
+				success = employeeService.empUpdate(employee); 
+				if(!success) {
+					msg = "社員データの更新に失敗しました。";
+					title = "失敗";
+					break;// case句を出る
+				}
+				// employee を 更新したあと、リレーションの、フィールドメンバの部署オブジェクトを更新   
+				// 部署IDがemployee.getDepartmentId() が取れるから、 部署IDから、部署インスタンスを取得して、リレーションにセットすること
+				Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
+				employee.setDepartment(department); // リレーション先にもセットする
+				break; // case句を出る
 			}
 
 			mav.setViewName("result");
@@ -256,19 +241,15 @@ public class EmployeeController { // コントローラでは、サービスク�
 			msg = "入力エラーが発生しました。";
 
 			mav.setViewName("employeeAddEdit");
+			// 表示用 Resultオブジェクトから、前に入力してある値を取得します！！！
+			Employee target = (Employee) result.getTarget();  // resultから
+			Map<Integer, String> prefMap = viewBean.getPrefMap();
+			mav.addObject("prefMap", prefMap);
+			mav.addObject("selectedPref" , target.getPref());  // 前のフォームで選択していたものを 選択済みのデータとして送る
 			// 表示用
-			List<String> prefList = viewBean.getPrefList();
-			mav.addObject("prefList", prefList);
-			mav.addObject("selectedPref" , employee.getPref());
-			// 表示用
-			List<Department> depList = departmentService.findAllOrderByDepId();
-			// depList  を引数にして呼び出す 表示のためにMapを取得する
-			Map<String, String> depMap = viewBean.getDepartmentMap(depList); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
+			Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
 			mav.addObject("depMap", depMap);
-		    Employee target = (Employee) result.getTarget();
-			// String depId = target.getDepartment().getDepartmentId();  // 前のフォームで選択をしたもの！！
-		    String depId = target.getDepartmentId();
-			mav.addObject("selectedDep", depId); // 前のフォームで選択をしたもの！！ 選択したままにする
+			mav.addObject("selectedDep", target.getDepartmentId()); // 前のフォームで選択をしたもの！！ 選択したままにする
 			
 			
 			mav.addObject("msg", msg);

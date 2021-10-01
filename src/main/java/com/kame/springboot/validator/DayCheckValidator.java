@@ -16,7 +16,7 @@ import com.kame.springboot.annotation.DayCheck;
 // 2つのパラメータ 日付のパラメータの比較を行う バリデータクラス
 public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> {
 
-	// 名前を合わせたフィールドを
+	// フィールド     アノテーションクラスのメソッドと、名前を合わせたフィールド名にする
 	String hireDateProperty; // 入力された値 日付文字列
     String retirementDateProperty;  // 入力された値 日付文字列
     String message;
@@ -47,16 +47,15 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 	      }else{
 	    	  // フォームクラスから比較対象項目の値を得る SpringのBeanWrapperというインタフェースを使います
 	    	  BeanWrapper beanWrapper = new BeanWrapperImpl(value);
-
 	    	  
 	    	  Date date1 =  (Date) beanWrapper.getPropertyValue(hireDateProperty);  // 未入力だと null
 	    	  Date date2 =  (Date) beanWrapper.getPropertyValue(retirementDateProperty);  // 未入力だと null
 	    	  
 	    	  if (date1 == null || date2 == null) {
-	    		  return true;  // ここでメソッドの終了 引数をメソッドの呼び出しもとに返す returnキーワード	    		  
+	    		  return true;  // ここでメソッドの終了 引数をメソッドの呼び出しもとに返す returnキーワード      true を返せば、バリデーションエラーにならない	    		  
 	    	  }
 
-	    	  // 退職日を前にしているので、退職日>=入社日の時は、0以上の数値が返り、そうでないときはマイナス数値が返る
+	    	  // 退職日を前にしているので、退職日 >= 入社日  の時は、0以上の数値が返り、そうでないときはマイナス数値が返る	    	  
 	    	  if(date2.compareTo(date1) >= 0) { 
 	    		  ret = true;  // スルーする
 	    	  } else {
@@ -69,7 +68,7 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 	    	  }
 	     }
 	      return ret;
-		// 相関チェックのアノテーションは、Formクラスのクラス定義の部分に付与する  引数として項目名を渡す
+		// 相関チェックのアノテーションは、Formクラスのクラス定義の部分に付与する  引数として項目名を渡す  各項目にはつけません
 		
 
 	      

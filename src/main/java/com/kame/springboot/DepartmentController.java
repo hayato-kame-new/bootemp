@@ -110,8 +110,8 @@ public class DepartmentController {
 		
 		ModelAndView resMav = null;
 		
-		// バリデーションの結果が、どうだったのか
-		if (!result.hasErrors()) {			
+		if (!result.hasErrors()) {
+			// バリデーションエラーが発生しなかったので、処理に進む
 			switch(action) {
 			case "depAdd": 				
 				// 新規では、部署名は、フォームから取得するが、部署IDは hiddenタグから送られてきて null が入ってる
@@ -120,7 +120,7 @@ public class DepartmentController {
 				// null　から上書きする
 				department.setDepartmentId(resultGeneratedId);
 				// データベースに新規保存する。サービスのメソッドを呼び出す
-				departmentService.saveAndFlushDepartmentData(department);			
+				departmentService.saveAndFlushDepartmentData(department);
 				break; // switch文を抜ける			
 			case "depEdit": // 編集の時には、必ずdepartmentIdの値が入ってるnullじゃない
 				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す

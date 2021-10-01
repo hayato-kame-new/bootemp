@@ -21,6 +21,8 @@ public interface DepartmentRepository extends JpaRepository<Department, String> 
 	// PostgreSQL だと、order by departmentId を付けないと、順番が、更新されたのが一番最後の順になってします。
 	public List<Department> findByDepartmentIdIsNotNullOrderByDepartmentIdAsc();
 
+	
+	
 	/**
 	 * 実際は使ってないメソッドです プライマリーキーが idじゃなくて departmentIdだから、リポジトリのメソッド自動生成機能のdeleteById は使えない
 	 * リポジトリのメソッド自動生成機能のdeleteById は、引数が、プライマリーキーでもいいし、エンティティインスタンスでもいい

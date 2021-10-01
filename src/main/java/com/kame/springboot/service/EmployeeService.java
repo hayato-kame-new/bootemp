@@ -186,13 +186,6 @@ public class EmployeeService {
 		return getGeneratedEmpId;		
 	}
 	
-	// これだと、リレーションのアノテーションをつけた時にエラーとなるので 使わない
-	// 社員登録する employee には、フォームからのデータがセットされてる。そして、さらに、
-	// 新しく登録した photoId　と、 自分で手動で、生成したemployeeIdの 値もセットして、更新してある。employeeインスタンスです。
-//	public Employee employeeAdd(Employee employee) {
-//		return employeeRepository.saveAndFlush(employee);
-//	}
-	
 	// こっちを使う
 	public boolean empAdd(Employee employee) {
 		Query query = entityManager.createNativeQuery("insert into employee (employeeid, name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) values (?,?,?,?,?,?,?,?,?,?,?)");
@@ -248,4 +241,38 @@ public class EmployeeService {
 	        }
 	        return bindingResult;
 	    }
+
+	 // 更新
+	public boolean empUpdate(Employee employee) {		
+		Query query = entityManager.createNativeQuery("update employee set (name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) = (?,?,?,?,?,?,?,?,?,?) where employeeid = ? ");
+		query.setParameter(1, employee.getName());
+		query.setParameter(2, employee.getAge());
+		query.setParameter(3, employee.getGender());
+		query.setParameter(4, employee.getPhotoId());
+		query.setParameter(5, employee.getZipNumber());
+		query.setParameter(6, employee.getPref());
+		query.setParameter(7, employee.getAddress());
+		query.setParameter(8, employee.getDepartmentId());
+		//データベースに保存する時には、java.util.Date から　java.sql.Date に変換すること
+		query.setParameter(9, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
+		
+		// 退職日は、null回避しないといけない	 	
+		java.util.Date utilRetireDate = employee.getRetirementDate();  // 未入力のとき null 入ってる	
+		java.sql.Date sqlRetireDate = null;
+		if(employee.getRetirementDate() != null) {  // null じゃなければ変換する
+			long retireLong = utilRetireDate.getTime();  // nullの時に変換しようとするとエラーここで発生するので
+			sqlRetireDate = new java.sql.Date(retireLong);
+		}
+		query.setParameter(10, sqlRetireDate, TemporalType.DATE);			
+
+		query.setParameter(11, employee.getEmployeeId());
+		
+		int result = query.executeUpdate();
+		if(result != 1) { // 失敗
+			return false;  //  失敗したら false が返る
+		}
+		return true;
+	}
+
+	
 }

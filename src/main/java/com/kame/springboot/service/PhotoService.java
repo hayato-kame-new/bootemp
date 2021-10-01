@@ -53,12 +53,9 @@ public class PhotoService {
 	  */
 	 public boolean photoDataAdd(byte[] photoData, String mime) {		 
 		 // createNativeQuery を使う時には、PostgreSqlだと、 テーブル名も小文字です。createNativeQuery は、JPQLを使わないで普通のSQL文になる
-		 Query query = entityManager.createNativeQuery("insert into photo ( photodata , mime )" +  " values ( :a, :b)");
-		 
+		 Query query = entityManager.createNativeQuery("insert into photo ( photodata , mime )" +  " values ( :a, :b)");		 
 		 query.setParameter("a", photoData);
 		 query.setParameter("b", mime);
-		// executeUpdate() で実行する
-
 		 int result = query.executeUpdate(); // 戻り値は、データの更新や、削除に成功したエンティティの数です
 		if (result != 1) { // 失敗
 			return false;  // 0が入ってる photoIdを返します、失敗すると0が返る		
@@ -114,15 +111,11 @@ public class PhotoService {
 
 	 //  社員新規作成の時、photoId が 0 だとこのメソッドは呼ばない 
 	 // 呼び出しもと(PhotoDisplayController)で  呼び出ししないようにする エラ〜メッセージ出るから
-	 public byte[] getPhotoData(int photoId) {
-		 
-		 byte[] byteData = null;
-		 
+	 public byte[] getPhotoData(int photoId) {		 
+		 byte[] byteData = null;		 
 		 Query query = entityManager.createNativeQuery("select photodata from photo where photoid = ?");
-		 query.setParameter(1, photoId);
-		 
+		 query.setParameter(1, photoId);		 
 		 byteData = (byte[]) query.getSingleResult(); 
-		 
 		 return byteData; 
 	 }
 	 
@@ -130,10 +123,19 @@ public class PhotoService {
 		String mime = "";
 		Query query = entityManager.createNativeQuery("select mime from photo where photoid = ?");
 		 query.setParameter(1, photoId);
-		 mime = (String) query.getSingleResult();
-
-		
+		 mime = (String) query.getSingleResult();		
 		return mime;
+	}
+	
+	// photoIdをもとに、photoDataを更新する
+	public boolean photoDataUpdate(int photoId, byte[] photoData, String mime) {
+		Query query = entityManager.createNativeQuery("update photo set photodata = ?, mime = ? where photoid = ?");  // カラムは全て小文字にすること
+		query.setParameter(1, photoData).setParameter(2, mime).setParameter(3, photoId);
+		int result = query.executeUpdate(); // 更新成功したデータ数が返る photoidが ユニーク(一意)なので、一つだけ更新する
+		if(result != 1) { // 失敗
+			return false;  // 失敗したら、 呼び出しもとに falseを返す  return で、メソッドを即終了して、引数を呼び出しもとに返すので、下の行は実行されない
+		}
+		return true; // 成功したら、ここまできたら成功だから、 trueを返す
 	}
 
 
