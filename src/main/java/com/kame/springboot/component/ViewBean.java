@@ -26,7 +26,7 @@ public class ViewBean {
 	}
 	
 	
-	// マップを作って返す  都道府県のMap 
+	// マップを作って返す  都道府県のMap    LinkedHashMap  は追加された順番を保持する
 	public Map<Integer, String> getPrefMap() {
 		 Map<Integer, String> prefMap = new LinkedHashMap<Integer, String>();
 		List<String> list = new ArrayList<String>(Arrays.asList("東京都", "神奈川県", "埼玉県", "千葉県", "茨城県"));

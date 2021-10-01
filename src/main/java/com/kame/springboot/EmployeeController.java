@@ -83,25 +83,23 @@ public class EmployeeController { // コントローラでは、サービスク�
 
 		mav.setViewName("employeeAddEdit");
 		mav.addObject("action", action);
+		mav.addObject("title", action);
 		// 表示用
 		Map<Integer, String> prefMap = viewBean.getPrefMap();
-		mav.addObject("prefMap", prefMap);
-		mav.addObject("selectedPref" , employee.getPref()); // 選択済みのデータを送る  新規だと、employee.getPref() は null
+		mav.addObject("prefMap", prefMap);		
 		// 表示用
 		Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
 		mav.addObject("depMap", depMap);
-		mav.addObject("selectedDepartmentId" , employee.getDepartmentId()); // 選択済みのデータを送る  新規だと、employee.getDepartmentId() は null
-		
-		mav.addObject("title", action);
-
+				
 		switch (action) {
 		case "add":
 			// 新規だと、空のEmployeeインスタンスが用意されている、各フィールドには、各データ型の規定値が入ってるので このままbreak; で
-			// switch文を抜ける
-			break;
+			break;// switch文を抜ける
 		case "edit":
 			// 編集だと、employeeIdの値が hiddenで送られてくる
 			Employee findEmployee = employeeService.getEmp(employeeId);
+			mav.addObject("selectedPref" , findEmployee.getPref()); // 更新の時には 選択済みのデータを送る
+			mav.addObject("selectedDepartmentId" , findEmployee.getDepartmentId()); // 更新の時には 選択済みのデータを送る
 			mav.addObject("formModel", findEmployee);  // 更新の時の この１行必要
 			break;
 		}
