@@ -21,11 +21,12 @@ td {
 padding: 5px; color:black; background:#f0f0f0;
 }
 .err { color: red; }
+.flash { color: skyblue; }
 </style>
 </head>
 <body>
 
-<!-- <p th:if="${flashMsg != null}" th:text="${flashMsg}"></p> -->
+<p class="flash" th:if="${flashMsg != null}" th:text="${flashMsg}"></p>
 <hr />
 <h3 th:text="社員一覧"></h3>
 
@@ -45,6 +46,12 @@ padding: 5px; color:black; background:#f0f0f0;
 			 </form>		
 		</td>
 		<td>
+			<form method = "post" action = "/emp_delete" >
+				<input type="hidden" name="employeeId" th:value="${obj[0]}" >
+				<input type="submit" value="削除" >
+			</form>
+			
+			
 		
 		</td>
 	</tr> 

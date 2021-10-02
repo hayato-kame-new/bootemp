@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kame.springboot.component.ViewBean;
 import com.kame.springboot.model.Employee;
@@ -56,11 +58,9 @@ public class EmployeeController { // コントローラでは、サービスク�
 	public ModelAndView index(Model model, ModelAndView mav) {
 		mav.setViewName("employee");
 		mav.addObject("title", "index");
-		// Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
-		// Flash Scope から取り出す
-		// String flashMsg = (String) model.getAttribute("flashMsg"); //
-		// 返り値がObject型なので、キャストすること
-		// mav.addObject("flashMsg", flashMsg);
+		// 削除後、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
+		 String flashMsg = (String) model.getAttribute("flashMsg"); // 返り値がObject型なので、キャストすること
+		 mav.addObject("flashMsg", flashMsg);
 		List<Employee> employeeList = employeeService.getEmpListOrderByAsc();
 		mav.addObject("employeeList", employeeList);
 		return mav;
@@ -126,6 +126,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 	 * @return mav
 	 */
 	@RequestMapping(value = "emp_add_edit", method = RequestMethod.POST)
+	@Transactional(readOnly=false)
 	public ModelAndView empAddUpdate(@RequestParam(name = "action") String action,
 			@RequestParam(name = "employeeId", required = false) String employeeId,
 		    @RequestParam(name = "upload_file", required = false) MultipartFile multipartFile,
@@ -133,8 +134,8 @@ public class EmployeeController { // コントローラでは、サービスク�
 
 		ModelAndView resMav = null;
 		// バリデーションOKなら結果ページへ送る バリデーションエラーの時は、入力画面へ送る
-		String title = "成功";
-		String msg = "データベースへ登録に成功しました。";
+		String title = "";
+		String msg = "";
 		
 		// アップロードされたファイルは「org.springframework.web.multipart.MultipartFile」で受け取ります。
 		// file.isEmpty()メソッド。値がnullの場合trueとなるが、ファイルサイズが0の場合もtrueとなるため、空ファイルの判定もできる。
@@ -203,7 +204,8 @@ public class EmployeeController { // コントローラでは、サービスク�
 						title = "失敗"; // 結果ページへの出力のため
 						break; // case句を抜ける
 					}
-					// ここまできたら成功
+					msg = "社員データを新規登録しました。";
+					title = "成功";
 				}
 				break; // case句を抜ける
 			case "edit":
@@ -225,13 +227,8 @@ public class EmployeeController { // コントローラでは、サービスク�
 					title = "失敗";
 					break;// case句を出る
 				}
-				// employee を 更新したあと、リレーションの、フィールドメンバの部署オブジェクトを更新   
-				// 部署IDがemployee.getDepartmentId() が取れるから、 部署IDから、部署インスタンスを取得して、リレーションにセットすること
-				
-				// いらない
-				// Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
-				// いらない
-				// employee.setDepartment(department); // リレーション先にもセットする
+				msg = "社員データを更新しました。";
+				title = "成功";
 				break; // editのcase句を出る
 			}
 
@@ -242,8 +239,8 @@ public class EmployeeController { // コントローラでは、サービスク�
 			resMav = mav;
 
 		} else { // バリデーションエラー発生したので、
-			title = "入力エラー";
 			msg = "入力エラーが発生しました。";
+			title = "入力エラー";
 
 			mav.setViewName("employeeAddEdit");
 			// 表示用 Resultオブジェクトから、前に入力してある値を取得します！！！
@@ -260,8 +257,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 			Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
 			mav.addObject("depMap", depMap);
 			mav.addObject("selectedDepartmentId", target.getDepartmentId()); // 前のフォームで選択をしたもの！！ 選択したままにする
-			
-			
+						
 			mav.addObject("msg", msg);
 			mav.addObject("title", title);
 			mav.addObject("action", action);
@@ -269,6 +265,24 @@ public class EmployeeController { // コントローラでは、サービスク�
 		}
 
 		return resMav;
+	}
+	
+	@RequestMapping(value = "/emp_delete", method = RequestMethod.POST)
+	@Transactional(readOnly=false)
+	public String delete(
+			@RequestParam(name = "employeeId") String employeeId,
+			RedirectAttributes redirectAttributes,
+			ModelAndView mav) {
+		// リダイレクト先へフラッシュメッセージ
+		String flashMsg = "社員データを削除しました。";
+		boolean result = employeeService.deleteEmployee(employeeId);
+		if(!result) {
+			flashMsg = "社員データを削除できませんでした。";
+		}
+		//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
+		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);
+		return "redirect:/employee";
+		
 	}
 
 }

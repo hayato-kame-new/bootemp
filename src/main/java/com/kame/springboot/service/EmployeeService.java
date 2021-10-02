@@ -93,7 +93,6 @@ public class EmployeeService {
 			String address = String.valueOf(obj[7]);
 			String departmentId = String.valueOf(obj[8]); // ここ編集時nullになってしまう。直すこと
 			
-			
 			java.sql.Date sqlHireDate = (Date) obj[9]; //   1999-11-11
 			
 			java.util.Date utilHireDate = new Date( sqlHireDate.getTime()); // 1998-12-12
@@ -274,5 +273,16 @@ public class EmployeeService {
 		return true;
 	}
 
+	// 削除
+	public boolean deleteEmployee(String employeeId) {
+		Query query = entityManager.createNativeQuery("delete from employee where employeeid = ?");
+		query.setParameter(1, employeeId);
+		int result = query.executeUpdate();
+		if(result != 1) { // 失敗
+			return false;  //  失敗したら false が返る
+		}
+		return true;
+	}
+	
 	
 }
