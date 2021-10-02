@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kame.springboot.component.ViewBean;
-import com.kame.springboot.model.Department;
 import com.kame.springboot.model.Employee;
 import com.kame.springboot.service.DepartmentService;
 import com.kame.springboot.service.EmployeeService;
@@ -84,10 +83,13 @@ public class EmployeeController { // コントローラでは、サービスク�
 		mav.setViewName("employeeAddEdit");
 		mav.addObject("action", action);
 		mav.addObject("title", action);
-		// 表示用
+		// 性別ラジオボタン表示用
+		Map<Integer, String> genderMap = viewBean.getGenderMap();
+		mav.addObject("genderMap", genderMap);	
+		// 都道府県セレクトタグのドロップボタン表示用
 		Map<Integer, String> prefMap = viewBean.getPrefMap();
 		mav.addObject("prefMap", prefMap);		
-		// 表示用
+		// 部署セレクトタグのドロップボタン表示用
 		Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
 		mav.addObject("depMap", depMap);
 				
@@ -98,8 +100,9 @@ public class EmployeeController { // コントローラでは、サービスク�
 		case "edit":
 			// 編集だと、employeeIdの値が hiddenで送られてくる
 			Employee findEmployee = employeeService.getEmp(employeeId);
-			mav.addObject("selectedPref" , findEmployee.getPref()); // 更新の時には 選択済みのデータを送る
-			mav.addObject("selectedDepartmentId" , findEmployee.getDepartmentId()); // 更新の時には 選択済みのデータを送る
+			// いらない テンプレートでformModelから取れるので
+			// mav.addObject("selectedPref" , findEmployee.getPref()); // 更新の時には 選択済みのデータを送る
+			// mav.addObject("selectedDepartmentId" , findEmployee.getDepartmentId()); // 更新の時には 選択済みのデータを送る
 			mav.addObject("formModel", findEmployee);  // 更新の時の この１行必要
 			break;
 		}
@@ -153,7 +156,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 
 		// バリデーションエラーが発生していないのなら、処理へ進み、    バリデーションエラー発生したら、再入力してもらう入力画面へ送る
 		if (!result.hasErrors()) { // バリデーションエラーが発生しないので、処理できる
-
+			// 入力用のストリームを確保 新規の時に、ファイルをアップロード必須
 			InputStream is = null;
 			byte[] photoData = null;
 			try {
@@ -173,8 +176,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 
 			switch (action) {
 			case "add":
-				// 新規では、ファイルのアップロードをしてくる必須にする???
-				 // 
+				// 新規では、ファイルのアップロードをしてくる必須にする
 				success = photoService.photoDataAdd(photoData, mime); // photoテーブルを新規に登録する 成功すればtrue 失敗するとfalse が返る
 				if (!success) { // falseが返ったら、失敗
 					msg = "写真データの新規登録に失敗しました。"; // 結果ページへの出力のため
@@ -191,8 +193,10 @@ public class EmployeeController { // コントローラでは、サービスク�
 
 					employee.setPhotoId(lastPhotoId); // フォームから送られてきた時点ではphotoIdの値は 規定値(int型の初期値)の 0
 														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを取得してきたので、それで上書きする					
-					Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
-					employee.setDepartment(department);  // リレーションに設定しました。これで、リレーションのdepartment.deprtmentId や department.departmentName　にデータをセットできてるはず
+					// いらない
+					// 	Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
+					// いらない
+				// 	employee.setDepartment(department);  // リレーションに設定しました。これで、リレーションのdepartment.deprtmentId や department.departmentName　にデータをセットできてるはず
 					success = employeeService.empAdd(employee);
 					if (!success) { // 失敗
 						msg = "社員データの新規登録に失敗しました。"; // 結果ページへの出力のため
@@ -223,9 +227,12 @@ public class EmployeeController { // コントローラでは、サービスク�
 				}
 				// employee を 更新したあと、リレーションの、フィールドメンバの部署オブジェクトを更新   
 				// 部署IDがemployee.getDepartmentId() が取れるから、 部署IDから、部署インスタンスを取得して、リレーションにセットすること
-				Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
-				employee.setDepartment(department); // リレーション先にもセットする
-				break; // case句を出る
+				
+				// いらない
+				// Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
+				// いらない
+				// employee.setDepartment(department); // リレーション先にもセットする
+				break; // editのcase句を出る
 			}
 
 			mav.setViewName("result");
@@ -241,13 +248,18 @@ public class EmployeeController { // コントローラでは、サービスク�
 			mav.setViewName("employeeAddEdit");
 			// 表示用 Resultオブジェクトから、前に入力してある値を取得します！！！
 			Employee target = (Employee) result.getTarget();  // resultから
+			// 性別ラジオボタン表示用
+			Map<Integer, String> genderMap = viewBean.getGenderMap();
+			mav.addObject("genderMap", genderMap);	
+			mav.addObject("selectedGender" , target.getGender());  // 前のフォームで選択していたものを 選択済みのデータとして送る
+			// 表示用 都道府県セレクトタグのドロップボタン表示用
 			Map<Integer, String> prefMap = viewBean.getPrefMap();
 			mav.addObject("prefMap", prefMap);
 			mav.addObject("selectedPref" , target.getPref());  // 前のフォームで選択していたものを 選択済みのデータとして送る
-			// 表示用
+			// 表示用 部署セレクトタグのドロップボタン表示用
 			Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
 			mav.addObject("depMap", depMap);
-			mav.addObject("selectedDep", target.getDepartmentId()); // 前のフォームで選択をしたもの！！ 選択したままにする
+			mav.addObject("selectedDepartmentId", target.getDepartmentId()); // 前のフォームで選択をしたもの！！ 選択したままにする
 			
 			
 			mav.addObject("msg", msg);

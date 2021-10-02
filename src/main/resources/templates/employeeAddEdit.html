@@ -38,6 +38,8 @@ div {
 	
 
 <!-- 新規の規定値がStringやDateの参照型では null　なので、formModel.employeeId    formModel.name  は表示するものはない -->
+
+
 <p th:text="${formModel.employeeId}"></p>
 <p th:text="${formModel.name}"></p>
 <p th:text="${formModel.age}"></p>
@@ -46,8 +48,9 @@ div {
 <p th:text="${formModel.photoId}"></p>
 <p th:text="${formModel.departmentId}"></p>
 <p th:text="${formModel.pref}"></p>
-<p th:text="${selectedPref}"></p>
-<p th:text="${selectedDepartmentId}"></p>
+<!-- <p th:text="${selectedPref}"></p>
+<p th:text="${selectedDepartmentId}"></p> -->
+
 <p>(<small class="input">※</small>)印は、入力必須です。</p>
 <form action="/emp_add_edit" method="post" enctype="multipart/form-data" th:object="${formModel}">
 
@@ -76,13 +79,8 @@ div {
 	
 	<div>
 		<label for="gender">性別(<small class="input">※</small>)</label>:
-		<input th:if="*{gender} == 0" type="radio" name="gender" th:value="1" th:text="男性" th:errorclass="err"/>
-		<input th:if="*{gender} == 0" type="radio" name="gender" th:value="2" th:text="女性" th:errorclass="err"/>
-		<input th:if="*{gender} == 1" type="radio" name="gender" th:value="1" th:text="男性" checked="checked" th:errorclass="err"/>
-		<input th:if="*{gender} == 1" type="radio" name="gender" th:value="2" th:text="女性" th:errorclass="err"/>
-		<input th:if="*{gender} == 2" type="radio" name="gender" th:value="1" th:text="男性" th:errorclass="err"/>
-		<input th:if="*{gender} == 2" type="radio" name="gender" th:value="2" th:text="女性" checked="checked" th:errorclass="err"/>
-	    <div th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" th:errorclass="err">
+	    <input th:each="element : ${genderMap}" type="radio" name="gender" th:value="${element.key}" th:text="${element.value}" th:field="*{gender}" th:checked="${element.key ==  formModel.gender}" th:errorclass="err"/>
+		<div th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}" th:errorclass="err">
 		</div>
 	</div>
 	
@@ -93,8 +91,6 @@ div {
  	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="250" height="250" /> 
  	</div>
  	<!-- 写真の表示 ここまで -->
- 	
- 	
  	
  	<!-- 写真のアップロード formタグには enctype="multipart/form-data" が必要  また、リクエストハンドラの引数に MultipartFile  multipartFile が必要-->
  	(<small class="input">※</small>)
@@ -114,11 +110,10 @@ div {
  	
  	<div>
  		<label for="pref"  >都道府県(<small class="input">※</small>)</label>:
- 		<select id="pref" name="pref">
-        	<option th:each="element : ${prefMap}" th:value="${element.value}" th:selected="${element.value ==  selectedPref}" th:inline="text">[[${element.value}]]</option>
+ 		<select id="pref" name="pref" size="1" th:errorclass="err" >
+        	<option th:each="element : ${prefMap}" th:value="${element.value}" th:selected="${element.value ==  formModel.pref}" th:inline="text">[[${element.value}]]</option>
     	</select>
  		 <p th:if="${#fields.hasErrors('pref')}" th:errors="*{pref}" th:errorclass="err"> </p>
-		
  	</div>
  	
  	<div>
@@ -127,27 +122,14 @@ div {
 		<div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" th:errorclass="err">
 		</div>	
 	</div>
- 	<!-- ポイント・・・ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつけること リレーションがあるので、name="department.departmentId"と設定します -->
  	
- 	<!-- name="department.departmentId" には、hiddenで送るのかな? 
- 	送らないと、バリデーションでエラーになるから送らないとだめだな バリデーションをかけないようにすればいいか 外した。
- 	 name="departmentId" に hiddenでおくれば良いのかな いや、送らなくてもコントローラでリレーションから取得して、セットしてるからいいか　-->
  	<div>
  		<label for="departmentId">所属(<small class="input">※</small>)</label>: 
- 		<!-- <select name="department.departmentId" size="1" th:errorclass="err">
- 			<th:block th:each="dep : ${depMap}">
-	 			<option th:value="${dep.key}" th:text="${dep.value}" th:selected = "${dep.key == selectedDep}"></option>		    			
-	 		</th:block>
- 		</select>
- 		<div th:if="${#fields.hasErrors('department.departmentId')}" th:errors="*{department.departmentId}" th:errorclass="err">
-		</div>		 -->
-		
-		<select name="departmentId" size="1" th:errorclass="err">
- 			<option th:each="dep : ${depMap}" th:value="${dep.key}" th:text="${dep.value}" th:selected = "${dep.key == selectedDep}"></option>		    			
- 		</select>
+ 		<select id="departmentId" name="departmentId"  size="1"  th:errorclass="err">
+        	<option th:each="element : ${depMap}" th:value="${element.key}" th:selected="${element.key == formModel.departmentId}" th:inline="text">[[${element.value}]]</option>
+    	</select>
  		<div th:if="${#fields.hasErrors('departmentId')}" th:errors="*{department.departmentId}" th:errorclass="err">
-		</div>
-		
+		</div>		
  	</div>
  	
  	<div>

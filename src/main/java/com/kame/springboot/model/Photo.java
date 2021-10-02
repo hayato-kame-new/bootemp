@@ -26,7 +26,7 @@ public class Photo {
 	
 	
 	@Column(name = "mime")  // 全て小文字にしてください
-	private String mine;  // contentTypeのことです   "image/jpeg"   "image/png"など  "タイプ/サブタイプ"  MIMEタイプは常にタイプとサブタイプの両方を持ち、一方だけで使われることはありません。
+	private String mime;  // contentTypeのことです   "image/jpeg"   "image/png"など  "タイプ/サブタイプ"  MIMEタイプは常にタイプとサブタイプの両方を持ち、一方だけで使われることはありません。
 	// nullでも構わないように null許可
 	
 	// Photo側は 社員を持っています。Photo側が、親エンティティ
@@ -80,13 +80,13 @@ public class Photo {
 	}
 
 
-	public String getMine() {
-		return mine;
+	public String getMime() {
+		return mime;
 	}
 
 
-	public void setMine(String mine) {
-		this.mine = mine;
+	public void setMime(String mime) {
+		this.mime = mime;
 	}
 	
 	

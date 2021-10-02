@@ -26,7 +26,15 @@ public class ViewBean {
 	}
 	
 	
-	// マップを作って返す  都道府県のMap    LinkedHashMap  は追加された順番を保持する
+	// マップを作って返す  性別のラジオボタンのためのMap   LinkedHashMap  は追加された順番を保持する
+	public Map<Integer, String> getGenderMap() {
+		Map<Integer, String> genderMap = new LinkedHashMap<Integer, String>();
+		genderMap.put(1, "男性");
+		genderMap.put(2, "女性");
+		return genderMap;
+	}
+	
+	// マップを作って返す  selectタグのドロップダウンリストの都道府県のMap    LinkedHashMap  は追加された順番を保持する
 	public Map<Integer, String> getPrefMap() {
 		 Map<Integer, String> prefMap = new LinkedHashMap<Integer, String>();
 		List<String> list = new ArrayList<String>(Arrays.asList("東京都", "神奈川県", "埼玉県", "千葉県", "茨城県"));
@@ -36,7 +44,7 @@ public class ViewBean {
 		return prefMap;
 	}
 	
-	// マップを作って返す  部署のMap 
+	// マップを作って返す  selectタグのドロップダウンリストの部署のMap   LinkedHashMap  は追加された順番を保持する
 	public Map<String, String> getDepartmentMap() {
 		 Map<String, String> depMap = new LinkedHashMap<String, String>();
 		 List<Department> depList = departmentService.findAllOrderByDepId();
@@ -46,6 +54,5 @@ public class ViewBean {
 		return depMap;
 	}
 
-	
 
 }

@@ -32,8 +32,7 @@ public class Employee {
 	@Id
 	@Column(name = "employeeid")  // 全て小文字にしてください、PostgreSQL のカラム名は全て小文字じゃないとエラーになるので
 	private String employeeId;
-	
-	
+		
 	@Column(name = "name", length=10485760 )
 	@NotEmpty(message="名前を入力してください")
 	private String name;
@@ -91,7 +90,7 @@ public class Employee {
 	
 	// @JoinColumn(name="departmentid", insertable=false,  updatable=false) // これを付け足したが、果たして良いのか？？？？
 	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
-	@Valid   // ネストしたJavaBeansもチェック対象となる  JavaBeansにしなきゃいけないのかな Departmentエンティティはすでに JavaBeansとして なのか
+	@Valid   // ネストしたJavaBeansもバリデーションチェック対象となる ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつける
 	Department department;  // @ManyToOne  だから、フィールド名は、単数形にしてください。アクセッサも追加すること ゲッター セッター
 	
 	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。
