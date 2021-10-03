@@ -281,8 +281,21 @@ public class EmployeeController { // コントローラでは、サービスク�
 		}
 		//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
 		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);
-		return "redirect:/employee";
-		
+		return "redirect:/employee";	
+	}
+	
+	// 検索画面を表示する
+	@RequestMapping(value = "/find", method = RequestMethod.GET)
+	public ModelAndView find(
+			@RequestParam(name = "action")String action,
+			ModelAndView mav) {
+		// 部署セレクトタグのドロップボタン表示用
+		Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
+		mav.addObject("depMap", depMap);
+		mav.setViewName("find");
+		mav.addObject("title", "search");
+		mav.addObject("action", action);		
+		return mav;
 	}
 
 }

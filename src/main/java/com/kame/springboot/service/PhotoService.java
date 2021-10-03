@@ -17,7 +17,7 @@ import com.kame.springboot.repositories.PhotoRepository;
 
 @Service
 @Transactional
-public class PhotoService {
+public class PhotoService {//リレーションの 主テーブルの方は、普通にリポジトリの自動生成が使える
 	
 	@Autowired
 	PhotoRepository photorepository;

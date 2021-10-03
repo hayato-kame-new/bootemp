@@ -27,7 +27,7 @@ import com.kame.springboot.repositories.EmployeeRepository;
 
 @Service
 @Transactional
-public class EmployeeService {
+public class EmployeeService {//リレーションの従テーブルの方は、createNativeQueryを使う。リポジトリの自動生成は使えない
 	
 	@Autowired
 	EmployeeRepository employeeRepository;

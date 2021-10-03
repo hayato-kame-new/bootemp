@@ -20,7 +20,7 @@ import com.kame.springboot.repositories.DepartmentRepository;
 
 @Service
 @Transactional
-public class DepartmentService {
+public class DepartmentService { //リレーションの 主テーブルの方は、普通にリポジトリの自動生成が使える
 	
 		// フィールドとして、DepartmentRepositoryインタフェースを実装した内部クラスのインスタンスを リポジトリとして 組み込む
 	@Autowired

@@ -24,7 +24,7 @@ padding: 5px; color:black; background:#f0f0f0;
 </style>
 </head>
 <body>
-
+<a href="/employee" th:href="@{/employee}">社員一覧ページへ</a>
 	<hr/>
 	<h3 th:text="部署一覧"></h3>
 	<p th:if="${departmentList} == null " th:text="現在登録されている部署はありません。">

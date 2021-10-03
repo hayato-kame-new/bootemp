@@ -26,6 +26,7 @@ padding: 5px; color:black; background:#f0f0f0;
 </head>
 <body>
 
+<a href="/department" th:href="@{/department}">部署一覧ページへ</a>
 <p class="flash" th:if="${flashMsg != null}" th:text="${flashMsg}"></p>
 <hr />
 <h3 th:text="社員一覧"></h3>
@@ -49,16 +50,17 @@ padding: 5px; color:black; background:#f0f0f0;
 			<form method = "post" action = "/emp_delete" >
 				<input type="hidden" name="employeeId" th:value="${obj[0]}" >
 				<input type="submit" value="削除" >
-			</form>
-			
-			
-		
+			</form>		
 		</td>
 	</tr> 
 </table>
 
 <!-- aリンクは、HTTPメソッドではGET URLパスの末尾?以降がクエリーパラメータとしてコントローラの対応するリクエストハンドラに送られる -->
-<a href="/emp_add_edit?action=add" ><button type="button">新規追加</button> </a>
-
+<div>
+<a href="/emp_add_edit?action=add" th:href="@{/emp_add_edit(action = 'add')}"><button type="button" th:text="新規追加"></button> </a>
+</div>
+<div>
+<a href="/find?action=search" th:href="@{/find(action = 'search')}"><button type="button" th:text="検索..." ></button></a>
+</div>
 </body>
 </html>
