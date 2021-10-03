@@ -11,6 +11,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,12 +96,38 @@ public class DepartmentService {
 	}
 	/**
 	 * 保存 リポジトリのメソッド自動生成について p248 リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
+	 * 
 	 * @return Department
 	 */
-	public Department saveAndFlushDepartmentData(Department department) { // 簡単なものはリポジトリの メソッド自動生成機能で
-		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成
-		return departmentRepository.saveAndFlush(department);  
+	// ここで例外処理をしてはいけない ネストされている @Transaction だから、呼び出しもとで処理する
+	// // UnexpectedRollbackException トランザクションをコミットしようとした結果、予期しないロールバックが発生した場合にスローされます。
+    // 実行時例外もしたい rollbackFor=Exception.classによって、 UnexpectedRollbackException　は、発生しなくなった
+//	@Transactional(readOnly=false , rollbackFor=Exception.class ) // rollbackFor=Exception.class  全ての例外が発生した場合、ロールバックさせる  
+//	public Department saveAndFlushDepartmentData(Department department) { // 簡単なものはリポジトリの メソッド自動生成機能で
+//		Department savedDepartment = null;
+//		try {
+//			 savedDepartment = departmentRepository.saveAndFlush(department);  // DataIntegrityViolationExceptionが発生します。
+//		} catch (DataIntegrityViolationException | UnexpectedRollbackException e) {  // // 実行時例外もしたい rollbackFor=Exception.classによって、 UnexpectedRollbackException　は、発生しなくなった
+//			System.out.println("DataIntegrityViolationExceptionをここでキャッチできた");  
+//			return null; // 例外発生したら、ここで、キャッチをして、すぐにreturn  呼び出しもとにnullを返します。
+//		}
+//
+//		return savedDepartment;  // エラーなければ、保存したエンティティオブジェクトを返す
+//	}
+	
+	
+//	
+//	実用的な実装を考えると、RuntimeException以外の例外が発生した場合もロールバックしたいので
+//	@Transactional(rollbackFor = Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します。
+//	呼び出し元つまりコントローラ のメソッドでtry-catchして成功、失敗で処理を分けます。コントローラには @Transactional つけません
+	@Transactional(readOnly=false, rollbackFor=Exception.class) // サービスクラスにつける
+	public Department saveAndFlushDepartmentData(Department department) throws DataIntegrityViolationException { // throws宣言が必要
+			// saveAndFlushは、DataIntegrityViolationException例外を発生させる可能性があるので、ここでは、キャッチしないで、例外を呼び出しもとへ、スロー投げます。
+			Department savedDepartment = departmentRepository.saveAndFlush(department);  // DataIntegrityViolationExceptionが発生します。
+
+			return savedDepartment;  // エラーなければ、保存したエンティティオブジェクトを返す
 	}
+	
 
 	/**
 	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
@@ -170,15 +197,16 @@ public class DepartmentService {
 	public List<Department> findByDepName(String depName) {
 		// 見つからなかったら nullを返す
 		List<Department> depList = new ArrayList<Department>();  // new して確保すること
-		Query query = entityManager.createQuery("from Department where departmentname = :departmentName");
-		query.setParameter("departmentName", depName);
+		Query query = entityManager.createNativeQuery("select * from department where departmentname = ?");
+		query.setParameter(1, depName);  // 一意のカラムだから、存在しても、一つの結果しか返らないが、一応リストで受け取る
 		List list = query.getResultList();
-		if(list.size() == 0) {
-			return null; // 存在しない 
-		}else {
-			depList = (List<Department>)list;
-			return depList; // 存在した
-		}
+//		if(list.size() == 0) {
+//			return null; // 存在しない 
+//		}else {
+//			depList = (List<Department>)list;
+//			return depList; // 存在した
+//		}
+		return list; // もし、存在してないなら、空のリストを返します。
 		
 	}
 

@@ -1,5 +1,7 @@
 package com.kame.springboot.validator;
 
+import java.util.List;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -30,7 +32,13 @@ public class DepartmentNameValidator implements ConstraintValidator<UniqueDepNam
 		if(value == null || value.isEmpty()) {
 			return false;
 		}
-        return departmentService.findByDepName(value) == null;
+		// return departmentService.findByDepName(value) == null;
+		List list = departmentService.findByDepName(value); // 空のリストだったら、存在してませんので true を返して、スルー
+		// リストに要素があったら、存在してるから、falseを返して、バリデーションエラーを発生させる
+		if(list.size() == 0) {
+			return true;
+		}
+		return false;
 	}
 
 }

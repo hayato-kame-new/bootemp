@@ -87,8 +87,8 @@ div {
 	<!-- 写真の表示 -->
  	<div>
  	写真: 
- 	<!-- ? 以降のクエリーパラメータをつけたGETアクセスです。  /getImg/?photo=1   とかのクエリー文字列つきのURLになる -->
- 	 <img th:src="@{/getImg/(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="250" height="250" /> 
+ 	<!-- ? 以降のクエリーパラメータをつけたGETアクセスです。  /getImg?photo=1   とかのクエリー文字列つきのURLになる -->
+ 	 <img th:src="@{/getImg(photoId = ${formModel.photoId})}"  alt="写真" title="社員の写真" width="250" height="250" /> 
  	</div>
  	<!-- 写真の表示 ここまで -->
  	
@@ -153,8 +153,8 @@ div {
 	</div>
 </form>
 
-<!-- リンク式を使ってキャンセルする p171 -->
-
-
+<!-- Thymeleafリンク式  aタグは HTTPメソッドは GET  なので URLの末尾に ?以降のクエリー文字列で送られる -->
+<!-- リンクURL式（th:hrefのこと）には大きく分けて クエリ形式  REST形式  の2つが存在し、SpringのController側の@RequestMappingでURLとして受け取る場合は「Rest形式」を使う -->
+<a href="employee.html" th:href="@{/employee}"><button type="button" th:text="キャンセル" ></button></a>
 </body>
 </html>

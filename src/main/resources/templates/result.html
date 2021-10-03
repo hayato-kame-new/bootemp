@@ -26,10 +26,7 @@ padding: 5px; color:black; background:#f0f0f0;
 <body>
 結果ページです
 
-<p th:text="${title}"></p>
-
 <p th:text="${msg}"></p>
-
 
 <th:block th:if="${#strings.equals(action, 'depAdd')  || #strings.equals(action, 'depEdit')}">
 	<a th:href="@{/department}" >部署一覧ページへ戻る</a>	

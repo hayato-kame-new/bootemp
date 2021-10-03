@@ -14,6 +14,7 @@ import com.kame.springboot.model.Department;
 public interface DepartmentRepository extends JpaRepository<Department, String> {
 
 	// インタフェースなので、抽象メソッドを宣言するだけです。
+	
 	 <Deprtment extends Department> Department saveAndFlush(Department department);
 
 	public Optional<Department> findById(String departmentId);

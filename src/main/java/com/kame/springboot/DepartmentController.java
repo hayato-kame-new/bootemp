@@ -3,7 +3,9 @@ package com.kame.springboot;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
+// import org.springframework.transaction.annotation.Propagation; の方です
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -78,7 +80,7 @@ public class DepartmentController {
 			// department.setDepartmentName(departmentName); // これでもいい
 			
 			Department findDepartment = departmentService.getByDepartmentId(departmentId);
-			mav.addObject("formModel", findDepartment );  // この１行
+			mav.addObject("formModel", findDepartment );  // この１行必要
 		}
 		
 		mav.setViewName("departmentAddEdit");
@@ -90,6 +92,8 @@ public class DepartmentController {
 	
 	/**
 	 * 登録や編集をする @Validated が必要
+	 * import org.springframework.transaction.annotation.Propagation;
+	 * ここには @Transactional つけないこと
 	 * @param action
 	 * @param departmentId
 	 * @param departmentName
@@ -99,7 +103,6 @@ public class DepartmentController {
 	 * @return mav
 	 */
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.POST)
-	@Transactional(readOnly=false)
 	public ModelAndView depAddUpdate(
 			@RequestParam(name = "action") String action,  // 必須パラメータにしてる
 			@RequestParam(name = "departmentId", required = false)String departmentId,  // departmentIdは、hiddenフィールド 新規の時は、nullなのでエラーにならないように 任意パラメータにする
@@ -120,11 +123,41 @@ public class DepartmentController {
 				// null　から上書きする
 				department.setDepartmentId(resultGeneratedId);
 				// データベースに新規保存する。サービスのメソッドを呼び出す
-				departmentService.saveAndFlushDepartmentData(department);
+                // departmentNameカラム  にユニーク制約がかかっているので、
+				// すでにある部署名を登録しようとすると、ユニーク制約に引っ掛かる、
+				// ここのsaveAndFlushDepartmentData から更に呼び出される saveAndFlushで、duplicate key value violates unique constraint "constraint_name"
+				//   詳細: Key (departmentname)=(開発部) already exists. と、エラーが出るため、例外をキャッチする必要がある org.springframework.dao.DataIntegrityViolationException
+				// ユニークの自作のバリデーションを使わないで、例外処理をして対処する
+				try {
+					Department savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
+				} catch (DataIntegrityViolationException e) {
+					// 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
+					mav.setViewName("departmentAddEdit");
+					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
+					mav.addObject("formModel", department);
+					mav.addObject("action", action);
+					resMav = mav;
+					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
+				}
+					
+				// ここに来たら、無事新規保存できてる
+				
 				break; // switch文を抜ける			
 			case "depEdit": // 編集の時には、必ずdepartmentIdの値が入ってるnullじゃない
-				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す
-				departmentService.saveAndFlushDepartmentData(department);
+				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す 
+				try {
+					Department savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
+				} catch (DataIntegrityViolationException e) {  // 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
+					// キャッチできた。
+					mav.setViewName("departmentAddEdit");
+					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
+					mav.addObject("formModel", department);
+					mav.addObject("action", action);
+					resMav = mav;
+					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
+				}
+				// departmentService.saveAndFlushDepartmentData(department);
+				// ここに来たら、成功してる
 				break; // switch文を抜ける
 			}
 			// 部署一覧へリダイレクトする リダイレクトは、リダイレクト先のリクエストハンドラを実行します
