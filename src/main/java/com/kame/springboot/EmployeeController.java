@@ -1,7 +1,11 @@
 package com.kame.springboot;
 
+
+
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,10 +30,10 @@ import com.kame.springboot.service.DepartmentService;
 import com.kame.springboot.service.EmployeeService;
 import com.kame.springboot.service.PhotoService;
 
-@Controller // コンポーネントです
-public class EmployeeController { // コントローラでは、サービスクラスを利用する
+@Controller // コンポーネントです  
+public class EmployeeController { // コントローラでは、サービスクラスを利用する サービスのクラスの方に@Transactionalアノテーションをつける場合もある
 
-	// フィールドには、サービスを置いて サービスの中から、いろんなものを呼び出す。
+	// フィールドには、サービスを置いて サービスの中から、いろんなものを呼び出す。@Autowiredによって自動で、内部クラスのインスタンスが生成されてる
 	@Autowired
 	EmployeeService employeeService;
 
@@ -39,7 +43,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 	@Autowired
 	DepartmentService departmentService;
 
-	// コントローラでは、 ビューのコンポーネントをインスタンスとしてもつ
+	// コントローラでは、 ビューのコンポーネントをフィールドとしてもつ @Autowiredによって自動で、内部クラスのインスタンスが生成されてる
 	@Autowired
 	ViewBean viewBean;
 	
@@ -53,15 +57,32 @@ public class EmployeeController { // コントローラでは、サービスク�
 	 * @param mav
 	 * @return mav
 	 */
-	@SuppressWarnings("uncheckd")
+	@SuppressWarnings({  "unchecked" })
 	@RequestMapping(value = "/employee", method = RequestMethod.GET)
-	public ModelAndView index(Model model, ModelAndView mav) {
+	public ModelAndView index(
+			Model model, // Flash Scopeから値の取り出しに必要
+			ModelAndView mav) {
+		String title = "index";
+		// 削除後や検索後、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
+		String flashMsg = "";
+		if (model.getAttribute("flashMsg") != null){
+			flashMsg = (String) model.getAttribute("flashMsg");// 返り値がObject型なので、キャストすること
+		}
+		//String flashMsg = (String) model.getAttribute("flashMsg"); // 返り値がObject型なので、キャストすること
+		// ここで、actionとって、findだったたら。。。
+		String action = (String) model.getAttribute("action"); // Flash Scopeから取り出す
+		List<Employee> employeeList = new ArrayList<Employee>();
+		if (action == null) {
+			employeeList = employeeService.getEmpListOrderByAsc(); // 一覧を辞書順で、昇順で取得する
+		}
+		if(action != null && action.equals("find")) {  // 先に action != null を書いてnullチェックすること
+			employeeList = (List<Employee>) model.getAttribute("employeeList"); // 検索結果をFlash Scopeから取り出す
+			title = "find result";
+		}
+		
 		mav.setViewName("employee");
-		mav.addObject("title", "index");
-		// 削除後、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
-		 String flashMsg = (String) model.getAttribute("flashMsg"); // 返り値がObject型なので、キャストすること
-		 mav.addObject("flashMsg", flashMsg);
-		List<Employee> employeeList = employeeService.getEmpListOrderByAsc();
+		mav.addObject("title", title);
+		 mav.addObject("flashMsg", flashMsg); // 検索結果が0の時には、検索結果が見つからないメッセージ
 		mav.addObject("employeeList", employeeList);
 		return mav;
 	}
@@ -98,11 +119,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 			// 新規だと、空のEmployeeインスタンスが用意されている、各フィールドには、各データ型の規定値が入ってるので このままbreak; で
 			break;// switch文を抜ける
 		case "edit":
-			// 編集だと、employeeIdの値が hiddenで送られてくる
-			Employee findEmployee = employeeService.getEmp(employeeId);
-			// いらない テンプレートでformModelから取れるので
-			// mav.addObject("selectedPref" , findEmployee.getPref()); // 更新の時には 選択済みのデータを送る
-			// mav.addObject("selectedDepartmentId" , findEmployee.getDepartmentId()); // 更新の時には 選択済みのデータを送る
+			Employee findEmployee = employeeService.getEmp(employeeId);  // 編集だと、employeeIdの値が hiddenで送られてくる
 			mav.addObject("formModel", findEmployee);  // 更新の時の この１行必要
 			break;
 		}
@@ -193,11 +210,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 															// になってるので、生成したIDで上書きする
 
 					employee.setPhotoId(lastPhotoId); // フォームから送られてきた時点ではphotoIdの値は 規定値(int型の初期値)の 0
-														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを取得してきたので、それで上書きする					
-					// いらない
-					// 	Department department = departmentService.getByDepartmentId(employee.getDepartmentId());
-					// いらない
-				// 	employee.setDepartment(department);  // リレーションに設定しました。これで、リレーションのdepartment.deprtmentId や department.departmentName　にデータをセットできてるはず
+														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを取得してきたので、それで上書きする
 					success = employeeService.empAdd(employee);
 					if (!success) { // 失敗
 						msg = "社員データの新規登録に失敗しました。"; // 結果ページへの出力のため
@@ -267,6 +280,13 @@ public class EmployeeController { // コントローラでは、サービスク�
 		return resMav;
 	}
 	
+	/**
+	 * 社員エンティティ削除
+	 * @param employeeId
+	 * @param redirectAttributes
+	 * @param mav
+	 * @return
+	 */
 	@RequestMapping(value = "/emp_delete", method = RequestMethod.POST)
 	@Transactional(readOnly=false)
 	public String delete(
@@ -282,20 +302,6 @@ public class EmployeeController { // コントローラでは、サービスク�
 		//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
 		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);
 		return "redirect:/employee";	
-	}
-	
-	// 検索画面を表示する
-	@RequestMapping(value = "/find", method = RequestMethod.GET)
-	public ModelAndView find(
-			@RequestParam(name = "action")String action,
-			ModelAndView mav) {
-		// 部署セレクトタグのドロップボタン表示用
-		Map<String, String> depMap = viewBean.getDepartmentMap(); // 取れてる {D01=総務部, D02=営業部, D03=開発部, D06=営業部９９９, D07=A部, D08=あいう, D09=新しい部署}
-		mav.addObject("depMap", depMap);
-		mav.setViewName("find");
-		mav.addObject("title", "search");
-		mav.addObject("action", action);		
-		return mav;
 	}
 
 }

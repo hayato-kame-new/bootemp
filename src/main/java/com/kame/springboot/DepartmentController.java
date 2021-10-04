@@ -148,7 +148,7 @@ public class DepartmentController {
 				try {
 					Department savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
 				} catch (DataIntegrityViolationException e) {  // 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
-					// キャッチできた。
+					// キャッチ
 					mav.setViewName("departmentAddEdit");
 					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
 					mav.addObject("formModel", department);
@@ -156,7 +156,6 @@ public class DepartmentController {
 					resMav = mav;
 					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
 				}
-				// departmentService.saveAndFlushDepartmentData(department);
 				// ここに来たら、成功してる
 				break; // switch文を抜ける
 			}

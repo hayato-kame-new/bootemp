@@ -31,7 +31,7 @@ padding: 5px; color:black; background:#f0f0f0;
 		<table>
 	 		<tr><td style="width:13ch;" ><label for="departmentId">所属: </label></td>
 	 			<td ><select id="departmentId" name="departmentId"  size="4" style="width:150px;">
-			 		    <option th:value="" th:text="選択しない"></option>
+			 		    <option value="" th:text="選択しない"></option>
 			        	<option th:each="element : ${depMap}" th:value="${element.key}"  th:inline="text">[[${element.value}]]</option>
 			    	</select>
 		    	</td>
@@ -45,7 +45,6 @@ padding: 5px; color:black; background:#f0f0f0;
 			<tr><td></td><td><input type="submit" value="検索" /></td></tr>
 		</table>	
 		<input type="hidden" name="action" value="${action}" />
-		<input type="submit" value="検索します..." />
 	</form>
 </body>
 </html>

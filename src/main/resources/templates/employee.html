@@ -27,18 +27,18 @@ padding: 5px; color:black; background:#f0f0f0;
 <body>
 
 <a href="/department" th:href="@{/department}">部署一覧ページへ</a>
-<p class="flash" th:if="${flashMsg != null}" th:text="${flashMsg}"></p>
 <hr />
 <h3 th:text="社員一覧"></h3>
 
-<p th:if="${employeeList} == null" th:text="現在登録されている社員はいません" ></p>
+<p class="flash" th:if="${flashMsg != null}" th:text="${flashMsg}"></p>
 
 <table>
 	<tr><th>社員ID</th><th>名前</th><th></th><th></th></tr>
 	
 	<tr th:each="obj : ${employeeList}" th:object="${obj}">	
 		<td th:text="${obj[0]}"></td>
-		<td th:text="${obj[1]}"></td>
+		<td th:text="${obj[1]}"></td> 
+		
 		<td>
 			 <form method = "get" action = "/emp_add_edit" >
 			 	<input type="hidden" name="employeeId" th:value="${obj[0]}" >
@@ -60,7 +60,7 @@ padding: 5px; color:black; background:#f0f0f0;
 <a href="/emp_add_edit?action=add" th:href="@{/emp_add_edit(action = 'add')}"><button type="button" th:text="新規追加"></button> </a>
 </div>
 <div>
-<a href="/find?action=search" th:href="@{/find(action = 'search')}"><button type="button" th:text="検索..." ></button></a>
+<a href="/find" th:href="@{/find}"><button type="button" th:text="検索..." ></button></a>
 </div>
 </body>
 </html>

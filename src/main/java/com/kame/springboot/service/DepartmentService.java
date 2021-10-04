@@ -19,7 +19,7 @@ import com.kame.springboot.model.Department;
 import com.kame.springboot.repositories.DepartmentRepository;
 
 @Service
-@Transactional
+@Transactional   // クラスに対して記述した設定はメソッドで記述された設定で上書きされる
 public class DepartmentService { //リレーションの 主テーブルの方は、普通にリポジトリの自動生成が使える
 	
 		// フィールドとして、DepartmentRepositoryインタフェースを実装した内部クラスのインスタンスを リポジトリとして 組み込む
@@ -62,6 +62,7 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 	   * 部署IDを生成する
 	   * @return departmentGeneratedId
 	   */
+	@Transactional(readOnly=false)
 	public String generatedId() {
 		
 		String departmentGeneratedId = null;
@@ -94,11 +95,7 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 		}
 		return departmentGeneratedId;
 	}
-	/**
-	 * 保存 リポジトリのメソッド自動生成について p248 リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
-	 * 
-	 * @return Department
-	 */
+	
 	// ここで例外処理をしてはいけない ネストされている @Transaction だから、呼び出しもとで処理する
 	// // UnexpectedRollbackException トランザクションをコミットしようとした結果、予期しないロールバックが発生した場合にスローされます。
     // 実行時例外もしたい rollbackFor=Exception.classによって、 UnexpectedRollbackException　は、発生しなくなった
@@ -116,10 +113,14 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 //	}
 	
 	
-//	
-//	実用的な実装を考えると、RuntimeException以外の例外が発生した場合もロールバックしたいので
-//	@Transactional(rollbackFor = Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します。
-//	呼び出し元つまりコントローラ のメソッドでtry-catchして成功、失敗で処理を分けます。コントローラには @Transactional つけません
+	/**
+	 * ロールバックの注意点として、非検査例外(RuntimeException及びそのサブクラス)が発生した場合はロールバックされるが、検査例外(Exception及びそのサブクラスでRuntimeExceptionのサブクラスじゃないもの)が発生した場合はロールバックされずコミットされる
+	 * RuntimeException以外の例外が発生した場合もロールバックしたいので @Transactional(rollbackFor = Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します。
+	 * 呼び出し元つまりコントローラ のメソッドでtry-catchする ここで例外処理をしてはいけない コントローラには @Transactional をつけないこと
+	 * @param department
+	 * @return
+	 * @throws DataIntegrityViolationException
+	 */
 	@Transactional(readOnly=false, rollbackFor=Exception.class) // サービスクラスにつける
 	public Department saveAndFlushDepartmentData(Department department) throws DataIntegrityViolationException { // throws宣言が必要
 			// saveAndFlushは、DataIntegrityViolationException例外を発生させる可能性があるので、ここでは、キャッチしないで、例外を呼び出しもとへ、スロー投げます。
@@ -128,10 +129,8 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 			return savedDepartment;  // エラーなければ、保存したエンティティオブジェクトを返す
 	}
 	
-
 	/**
 	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
-	 * 主キーから、エンティティを取得 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
 	 * @return Optional<Department>
 	 */
 //	public Optional<Department> findByIdDepartmentData(String departmentId){
@@ -140,31 +139,27 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 	
 	/**
 	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
-	 * 主キーから、エンティティを削除 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
 	 * @return void
 	 */
 //	public void deleteByIdDepartmentData(String departmentId) {
-//		// 注意 戻り値はないので、 return 付けません。
-//		departmentRepository.deleteById(departmentId);		
+//		departmentRepository.deleteById(departmentId);// 注意 戻り値はないので、 return 付けません
 //	}
 
 	/**
-	 * 実際使ってないメソッド id じゃなくて、 departmentId　だから、メソッド自動生成機能は使えないので
-	 * エンティティを引数にして、エンティティを削除 リポジトリのメソッド自動生成について p248  リポジトリのメソッドを呼び出して結果の戻り値をリターンしてる
+	 * 実際使ってないメソッド id じゃなくて、 departmentId だから、メソッド自動生成機能は使えないので
 	 * @return void
 	 */
 //	public void deleteByEntityObject(Department department) {
-//		// TODO 自動生成されたメソッド・スタブ
-//		// 注意 戻り値はないので、 return 付けません。
-//				departmentRepository.deleteById(department);
+//				departmentRepository.deleteById(department);// 注意 戻り値はないので、 return 付けません。
 //	}
 	
-	
 	/**
-	 * DAOじゃなくてサービスを使って定義する
-	 * EntityManager　と Query　を使う。JPQLクエリー
-	 * @Column(name = departmentid)  にして置く必要がある カラム名を全て小文字の設定にしておく
+	 * EntityManagerとQueryを使う。JPQLクエリー文 createQueryメソッド使う
+	 * エンティティに@Column(name = departmentid)  departmentid小文字で書く必要がある カラム名を全て小文字の設定にしておく
+	 * @param departmentId
+	 * @return
 	 */
+	@Transactional(readOnly=false)
 	public boolean deleteJPQL(String departmentId) {
 		Query query = entityManager.createQuery("delete from Department where departmentid = :departmentId");
 		query.setParameter("departmentId", departmentId);
@@ -177,37 +172,30 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 	
 	/**
 	 * 今回は、 id でなく、departmentId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、
-	 * リポジトリとは関係なく、
-	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
-	 * サービスクラスに定義して利用する。
-	 * JPQLクエリーの where departmentid のところ、departmentid  という風に全て小文字にすること
+	 * リポジトリの、メソッド自動生成は使えないデータベースアクセスをするので、リポジトリとは関係なく、EntityManager と Queryを使う。JPQLクエリー文を使う
+	 * JPQLクエリーの where departmentid のところ、departmentid  という風に全て小文字にすること エンティティで設定した@Column(name = "departmentid")  全て小文字のカラム名
 	 * @param departmentId
 	 * @return department
 	 */
 	public Department getByDepartmentId(String departmentId) {
-		Query query = entityManager.createQuery("from Department where departmentid = :departmentId");
+		Query query = entityManager.createQuery("from Department where departmentid = :departmentId"); // カラム名は、
 		query.setParameter("departmentId", departmentId);
-		// Queryインスタンスが持っている getSingleResult() インスタンスメソッドの戻り値は java.lang.Object です。
-		// 一つの型のない結果を返します。だから、キャストが必要です。
-		Department department = (Department) query.getSingleResult();
+		Department department = (Department) query.getSingleResult(); // getSingleResult() インスタンスメソッドの戻り値は java.lang.Object 一つの型のない結果を返す
 		return department;		
 	}
 
-	
-	public List<Department> findByDepName(String depName) {
-		// 見つからなかったら nullを返す
+	/**
+	 * 部署の名前から部署インスタンスが要素になるリストを取得する
+	 * @param depName
+	 * @return list
+	 */
+	public List<Department> findByDepName(String departmentName) {
 		List<Department> depList = new ArrayList<Department>();  // new して確保すること
-		Query query = entityManager.createNativeQuery("select * from department where departmentname = ?");
-		query.setParameter(1, depName);  // 一意のカラムだから、存在しても、一つの結果しか返らないが、一応リストで受け取る
-		List list = query.getResultList();
-//		if(list.size() == 0) {
-//			return null; // 存在しない 
-//		}else {
-//			depList = (List<Department>)list;
-//			return depList; // 存在した
-//		}
+		Query query = entityManager.createNativeQuery("select * from department where departmentname = ?");  // createNativeQuery なので JPQLクエリーではなく 普通のSQL文
+		query.setParameter(1, departmentName);  // 一意のカラムだから、存在しても、一つの結果しか返らないが、リストで受け取る
+		@SuppressWarnings("unchecked")
+		List<Department> list = (List<Department>)query.getResultList();  // SELECTクエリーを実行し、問合せ結果を型のないリストとして返します キャスト必要
 		return list; // もし、存在してないなら、空のリストを返します。
-		
 	}
 
 	

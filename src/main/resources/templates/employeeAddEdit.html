@@ -21,6 +21,7 @@ td {
 padding: 5px; color:black; background:#f0f0f0;
 }
 .err { color: red; font-size: 80%;}
+.msg { color: skyblue; }
 .input { color: red; }
 div {
 	margin: 12px 0;
@@ -30,26 +31,11 @@ div {
 </head>
 <body>
 
-<p class="err" th:text="${msg}" ></p>
+<p class="msg" th:if="${msg}" th:text="${msg}" ></p>
+<p class="msg" th:if="${flashMsg}" th:text="${flashMsg}" ></p>
 
 <hr/>
 	<h3 th:text="'社員' + (${action == 'add'} ? '新規作成' : '編集') + 'ページ'"></h3>
-	
-	
-
-<!-- 新規の規定値がStringやDateの参照型では null　なので、formModel.employeeId    formModel.name  は表示するものはない -->
-
-
-<p th:text="${formModel.employeeId}"></p>
-<p th:text="${formModel.name}"></p>
-<p th:text="${formModel.age}"></p>
-<p th:text="${formModel.gender}"></p>
-
-<p th:text="${formModel.photoId}"></p>
-<p th:text="${formModel.departmentId}"></p>
-<p th:text="${formModel.pref}"></p>
-<!-- <p th:text="${selectedPref}"></p>
-<p th:text="${selectedDepartmentId}"></p> -->
 
 <p>(<small class="input">※</small>)印は、入力必須です。</p>
 <form action="/emp_add_edit" method="post" enctype="multipart/form-data" th:object="${formModel}">

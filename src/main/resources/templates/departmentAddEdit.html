@@ -30,9 +30,6 @@ padding: 5px; color:black; background:#f0f0f0;
 	<hr/>
 	<h3 th:text="'部署' + (${action == 'depAdd'} ? '新規作成' : '編集') + 'ページ'"></h3>	
 	
- 	<p th:text="${formModel.departmentId}"></p>
-	<p th:text="${formModel.departmentName}"></p> 
-	
 	<p class="msg" th:if="${msg}" th:text="${msg}" ></p>
 	
 	<form method="post" action="/dep_add_edit" th:object="${formModel}">	

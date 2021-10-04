@@ -27,63 +27,66 @@ import com.kame.springboot.repositories.EmployeeRepository;
 
 @Service
 @Transactional
-public class EmployeeService {//リレーションの従テーブルの方は、createNativeQueryを使う。リポジトリの自動生成は使えない
-	
+public class EmployeeService {// リレーションの従テーブルの方は、createNativeQueryを使う。リポジトリの自動生成は使えない
+
 	@Autowired
 	EmployeeRepository employeeRepository;
-	
+
 	// リポジトリには、限界がある リポジトリのメソッド自動生成できないものは、idを使ったものです。今回は、departmentIdですので。
-	// DAOに書かずに、サービスに定義します。@PersistenceContextは一つしかつけれない もしもコントローラに付けたら、コントローラの方を削除しないといけない
-	// リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。
-	@PersistenceContext  // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。 その他の場所には書けません。１箇所だけ
+	// DAOに書かずに、サービスに定義します。@PersistenceContextは一つしかつけれない
+	// もしもコントローラに付けたら、コントローラの方を削除しないといけない
+	// リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、 EntityManager と Query を使う。
+	@PersistenceContext // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。
+						// その他の場所には書けません。１箇所だけ
 	private EntityManager entityManager;
-	
+
 	@Autowired
 	LogicBean logicBean;
-	
-	
+
 	/**
-	 *  リポジトリの自動生成機能で作る、findAll()メソッドだと、更新をした後に、更新したデータが一番後ろになってしまうため、使わない。
-	 *  PostgreSQL だと、order by employeeId を付けないと、順番が、更新されたのが一番最後の順になってします。
-	   * レコードを全件取得する。 リポジトリのメソッド自動生成について p248
-	   * @return List<Department>
-	   */
+	 * リポジトリの自動生成機能で作る、findAll()メソッドだと、更新をした後に、更新したデータが一番後ろになってしまうため、使わない。
+	 * PostgreSQL だと、order by employeeId を付けないと、順番が、更新されたのが一番最後の順になってします。
+	 * レコードを全件取得する。 リポジトリのメソッド自動生成について p248
+	 * 
+	 * @return List<Department>
+	 */
 	@SuppressWarnings("unchecked")
 	public List<Employee> findAllOrderByEmpId() { // 簡単なものはリポジトリの メソッド自動生成機能で
-		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成 idが、employeeIdのため、自動生成使えない？らしい
+		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成
+		// idが、employeeIdのため、自動生成使えない？らしい
 		// エラー
-		return employeeRepository.findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();  
+		return employeeRepository.findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Employee> getEmpListOrderByAsc() {
-		
+
 		Query query = entityManager.createNativeQuery("select * from employee  order by employeeid asc");
 		List<Employee> empList = query.getResultList();
 		return empList;
 	}
-	
+
 	/**
-	 * これ リレーションついてるから、
-	 * 今回は、 id でなく、employeeId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、  (findByIdは、エンティティを引数にできる)
-	 * リポジトリとは関係なく、
-	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、　EntityManager と Query　を使う。createNativeQueryを使う リレーションをつけてるので createQueryは使わない JPQL文は使わない 普通のSQL文を使う
-	 * サービスクラスに定義して利用する。
-	 * SQLクエリーの where employeeid のところ、employeeid  という風に全て小文字にすること
+	 * これ リレーションついてるから、 今回は、 id でなく、employeeId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、
+	 * (findByIdは、エンティティを引数にできる) リポジトリとは関係なく、
+	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、 EntityManager と Query
+	 * を使う。createNativeQueryを使う リレーションをつけてるので createQueryは使わない JPQL文は使わない 普通のSQL文を使う
+	 * サービスクラスに定義して利用する。 SQLクエリーの where employeeid のところ、employeeid という風に全て小文字にすること
+	 * 
 	 * @param employeeId
 	 * @return employee
 	 */
-	public Employee getEmp(String employeeId) {		
+	public Employee getEmp(String employeeId) {
 		Query query = entityManager.createNativeQuery("select * from employee where employeeid = ?");
-		query.setParameter(1, employeeId);		
-		List<Employee> list =  (List<Employee>) query.getResultList(); // OK
+		query.setParameter(1, employeeId);
+		List<Employee> list = (List<Employee>) query.getResultList();
 		Iterator itr = list.iterator();
-		Employee emp = null;
-		List<Employee> resultlist = new ArrayList<Employee>(); // リストは、newして確保しておくこと
-		
-		while(itr.hasNext()) {
+		Employee emp = new Employee();
+		List<Employee> resultlist = new ArrayList<Employee>(); // newして確保
+
+		while (itr.hasNext()) {
 			Object[] obj = (Object[]) itr.next();
-			String id = String.valueOf(obj[0]); 
+			// String employeeId = String.valueOf(obj[0]);
 			String name = String.valueOf(obj[1]);
 			int age = Integer.parseInt(String.valueOf(obj[2]));
 			int gender = Integer.parseInt(String.valueOf(obj[3]));
@@ -92,22 +95,22 @@ public class EmployeeService {//リレーションの従テーブルの方は、
 			String pref = String.valueOf(obj[6]);
 			String address = String.valueOf(obj[7]);
 			String departmentId = String.valueOf(obj[8]); // ここ編集時nullになってしまう。直すこと
-			
-			java.sql.Date sqlHireDate = (Date) obj[9]; //   1999-11-11
-			
-			java.util.Date utilHireDate = new Date( sqlHireDate.getTime()); // 1998-12-12
-			
-			// 退職日は、nullかもしれないので、java.sql.Date　でnullだったら、java.util.Date でもnullのまま
-			java.util.Date utilRretirementDate = null; 
-			
+
+			java.sql.Date sqlHireDate = (Date) obj[9]; // 1999-11-11
+
+			java.util.Date utilHireDate = new Date(sqlHireDate.getTime()); // 1998-12-12
+
+			// 退職日は、nullかもしれないので、java.sql.Date でnullだったら、java.util.Date でもnullのまま
+			java.util.Date utilRretirementDate = null;
+
 			if (obj[10] != null) {
 				java.sql.Date sqlRretirementDate = (Date) obj[10]; // 2003-03-03
-				
+
 				long longDate = sqlRretirementDate.getTime();
-				utilRretirementDate = new java.util.Date(longDate);// Mon Mar 03 00:00:00 JST 2003			
+				utilRretirementDate = new java.util.Date(longDate);// Mon Mar 03 00:00:00 JST 2003
 			}
-			emp = new Employee();
-			emp.setEmployeeId(id);
+			// セットしていく
+			emp.setEmployeeId(employeeId);
 			emp.setName(name);
 			emp.setAge(age);
 			emp.setGender(gender);
@@ -120,50 +123,48 @@ public class EmployeeService {//リレーションの従テーブルの方は、
 			emp.setRetirementDate(utilRretirementDate);
 
 			// 引数ありコンストラクタを使うと
-			//  Employee emp = new Employee(id, name, age,gender,photoId,zipNumber,pref,address,departmentId,utilHireDate, utilRretirementDate);
+			// Employee emp = new Employee(id, name,
+			// age,gender,photoId,zipNumber,pref,address,departmentId,utilHireDate,
+			// utilRretirementDate);
 			resultlist.add(emp);
 		}
 		// System.out.println(resultlist.size());
 		Employee returnEmp = resultlist.get(0);
-		
+
 		return returnEmp;
-	
+
 		// List<Employee[]> list = query.getResultList(); // リストにするなら
-	
+
 	}
-	
-	//サービスから、ロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所
+
+	// サービスから、ロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所
 	// サービスの中で、リポジトリをフィールドとしてBeanインスタンスをメンバとしているように、
 	// ロジックのクラスも、まず、Bean化できるように、Beanクラスとして作り、サービスの中で、@Autowiredを使って、インスタンスを自動瀬星できるようにしていく。
 	public void logic_test_from_service() {
-		logicBean.logic_test(); 
+		logicBean.logic_test();
 	}
-	
+
 	// 社員ID生成する リレーションのアノテーションを付けたら、エラーで使えなくなりました。
 	// 使いません。
 	public String generateEmpIdFromCriteria() {
-		
+
 		String generatedEmpId = null;
-		
-		CriteriaBuilder builder = 
-				entityManager.getCriteriaBuilder();
-		
-		CriteriaQuery<Employee> query = 
-				builder.createQuery(Employee.class);
-		
+
+		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Employee> query = builder.createQuery(Employee.class);
+
 		Root<Employee> root = query.from(Employee.class);
-		
+
 		query.select(root).orderBy(builder.desc(root.get("employeeId")));
-		
-		List<Employee> list = (List<Employee>)entityManager.createQuery(query)
-				.setFirstResult(0)
-				.setMaxResults(1)
+
+		List<Employee> list = (List<Employee>) entityManager.createQuery(query).setFirstResult(0).setMaxResults(1)
 				.getResultList();
 		// 社員IDが 辞書順に並び替えて、最後にあるものを取得した。それがリストに１つ入ってるはず、リストに要素が一つも無かったら、まだ、全く登録されていないので
 		if (list.size() == 0) {
-			 // まだ、ひとつも、employeeデータが登録されてなかったら、
+			// まだ、ひとつも、employeeデータが登録されてなかったら、
 			generatedEmpId = "EMP0001"; // 一番最初になります。
-		 } else {	
+		} else {
 			Employee employee = list.get(0);
 			String getLastId = employee.getEmployeeId(); // 最後に登録されているId
 			// 文字列切り取りして、数値に変換して、 +1 する それをまた、文字列にフォーマットで変換する
@@ -171,23 +172,25 @@ public class EmployeeService {//リレーションの従テーブルの方は、
 		}
 		return generatedEmpId;
 	}
-	
+
 	// 手動で、社員IDを生成する リレーションをつけると、こっちでしかできない
 	// エンティティのリレーションを付けたので、こっちを使う、上のCriteria APIだとリレーションつけたら、エラーになるようになった。
 	public String generateEmpId() {
-		// まず、最後尾の社員IDをとってくる order by 辞書順で並べ替えて、desc をして limit 1 
+		// まず、最後尾の社員IDをとってくる order by 辞書順で並べ替えて、desc をして limit 1
 		// employeeid カラムは、全てを小文字にすること postgreSQLだから テーブル名 カラム名 全て小文字
-		Query query = entityManager.createNativeQuery("select employeeid from employee order by employeeid desc limit 1");
+		Query query = entityManager
+				.createNativeQuery("select employeeid from employee order by employeeid desc limit 1");
 		// 戻り値は、型のないObjectになるので、キャストすること
-		String lastStringEmpId = (String)query.getSingleResult();
-		int plusOne = Integer.parseInt(lastStringEmpId.substring(3)) + 1;		
-		String getGeneratedEmpId = String.format("EMP%04d", plusOne);		
-		return getGeneratedEmpId;		
+		String lastStringEmpId = (String) query.getSingleResult();
+		int plusOne = Integer.parseInt(lastStringEmpId.substring(3)) + 1;
+		String getGeneratedEmpId = String.format("EMP%04d", plusOne);
+		return getGeneratedEmpId;
 	}
-	
+
 	// こっちを使う
 	public boolean empAdd(Employee employee) {
-		Query query = entityManager.createNativeQuery("insert into employee (employeeid, name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) values (?,?,?,?,?,?,?,?,?,?,?)");
+		Query query = entityManager.createNativeQuery(
+				"insert into employee (employeeid, name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) values (?,?,?,?,?,?,?,?,?,?,?)");
 		query.setParameter(1, employee.getEmployeeId());
 		query.setParameter(2, employee.getName());
 		query.setParameter(3, employee.getAge());
@@ -197,53 +200,54 @@ public class EmployeeService {//リレーションの従テーブルの方は、
 		query.setParameter(7, employee.getPref());
 		query.setParameter(8, employee.getAddress());
 		query.setParameter(9, employee.getDepartmentId());
-		
-		//データベースに保存する時には、java.util.Date から　java.sql.Date に変換すること
+
+		// データベースに保存する時には、java.util.Date から java.sql.Date に変換すること
 		// データベース型に対応するTemporalType列挙型に設定する属性です。指定できる値は，次の3種類です。
-		// TemporalType.DATE：java.sql.Dataと同じです。TemporalType.TIME：java.sql.Timeと同じです。 TemporalType.TIMESTAMP：java.sql.Timestampと同じです。
+		// TemporalType.DATE：java.sql.Dataと同じです。TemporalType.TIME：java.sql.Timeと同じです。
+		// TemporalType.TIMESTAMP：java.sql.Timestampと同じです。
 		// 入社日は、必ず入力してもらってるので、nullではない
 		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
-		
-		// 退職日は、null回避しないといけない	 	
-		java.util.Date utilRetireDate = employee.getRetirementDate();  // 未入力のとき null 入ってる	
+
+		// 退職日は、null回避しないといけない
+		java.util.Date utilRetireDate = employee.getRetirementDate(); // 未入力のとき null 入ってる
 		java.sql.Date sqlRetireDate = null;
-		if(employee.getRetirementDate() != null) {
-			long retireLong = utilRetireDate.getTime();  // nullの時に変換しようとするとエラーここで発生するので
+		if (employee.getRetirementDate() != null) {
+			long retireLong = utilRetireDate.getTime(); // nullの時に変換しようとするとエラーここで発生するので
 			sqlRetireDate = new java.sql.Date(retireLong);
 		}
-		query.setParameter(11, sqlRetireDate, TemporalType.DATE);			
-		
+		query.setParameter(11, sqlRetireDate, TemporalType.DATE);
+
 		int result = query.executeUpdate(); // 成功したデータ数が返る
-		if(result != 1) {
-			//失敗
+		if (result != 1) {
+			// 失敗
 			return false;
 		}
 		return true;
 	}
-	
-	// エラーメッセージを取得する 全部を
-	 public String addAllErrors(BindingResult result) {
-	        String errorMessages = "";
-	        for (ObjectError error : result.getAllErrors()) {
-	            // ここでメッセージを取得する。
-	            errorMessages += error.getDefaultMessage();
-	        }
-	        return errorMessages;
-	    }
-	
-	// アノテーションなしに行ったすべてのエラーをBindingResultに追加する。
-	 public static BindingResult addAllErrors(BindingResult bindingResult, Map<String, String> errorMap) {
-	        for (Map.Entry<String, String> entry : errorMap.entrySet()) {
-	            FieldError fieldError = new FieldError(
-	                           bindingResult.getObjectName(), entry.getKey(), entry.getValue());
-	            bindingResult.addError(fieldError);
-	        }
-	        return bindingResult;
-	    }
 
-	 // 更新
-	public boolean empUpdate(Employee employee) {		
-		Query query = entityManager.createNativeQuery("update employee set (name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) = (?,?,?,?,?,?,?,?,?,?) where employeeid = ? ");
+	// エラーメッセージを取得する 全部を
+	public String addAllErrors(BindingResult result) {
+		String errorMessages = "";
+		for (ObjectError error : result.getAllErrors()) {
+			// ここでメッセージを取得する。
+			errorMessages += error.getDefaultMessage();
+		}
+		return errorMessages;
+	}
+
+	// アノテーションなしに行ったすべてのエラーをBindingResultに追加する。
+	public static BindingResult addAllErrors(BindingResult bindingResult, Map<String, String> errorMap) {
+		for (Map.Entry<String, String> entry : errorMap.entrySet()) {
+			FieldError fieldError = new FieldError(bindingResult.getObjectName(), entry.getKey(), entry.getValue());
+			bindingResult.addError(fieldError);
+		}
+		return bindingResult;
+	}
+
+	// 更新
+	public boolean empUpdate(Employee employee) {
+		Query query = entityManager.createNativeQuery(
+				"update employee set (name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) = (?,?,?,?,?,?,?,?,?,?) where employeeid = ? ");
 		query.setParameter(1, employee.getName());
 		query.setParameter(2, employee.getAge());
 		query.setParameter(3, employee.getGender());
@@ -252,23 +256,23 @@ public class EmployeeService {//リレーションの従テーブルの方は、
 		query.setParameter(6, employee.getPref());
 		query.setParameter(7, employee.getAddress());
 		query.setParameter(8, employee.getDepartmentId());
-		//データベースに保存する時には、java.util.Date から　java.sql.Date に変換すること
+		// データベースに保存する時には、java.util.Date から java.sql.Date に変換すること
 		query.setParameter(9, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
-		
-		// 退職日は、null回避しないといけない	 	
-		java.util.Date utilRetireDate = employee.getRetirementDate();  // 未入力のとき null 入ってる	
+
+		// 退職日は、null回避しないといけない
+		java.util.Date utilRetireDate = employee.getRetirementDate(); // 未入力のとき null 入ってる
 		java.sql.Date sqlRetireDate = null;
-		if(employee.getRetirementDate() != null) {  // null じゃなければ変換する
-			long retireLong = utilRetireDate.getTime();  // nullの時に変換しようとするとエラーここで発生するので
+		if (employee.getRetirementDate() != null) { // null じゃなければ変換する
+			long retireLong = utilRetireDate.getTime(); // nullの時に変換しようとするとエラーここで発生するので
 			sqlRetireDate = new java.sql.Date(retireLong);
 		}
-		query.setParameter(10, sqlRetireDate, TemporalType.DATE);			
+		query.setParameter(10, sqlRetireDate, TemporalType.DATE);
 
 		query.setParameter(11, employee.getEmployeeId());
-		
+
 		int result = query.executeUpdate();
-		if(result != 1) { // 失敗
-			return false;  //  失敗したら false が返る
+		if (result != 1) { // 失敗
+			return false; // 失敗したら false が返る
 		}
 		return true;
 	}
@@ -278,11 +282,193 @@ public class EmployeeService {//リレーションの従テーブルの方は、
 		Query query = entityManager.createNativeQuery("delete from employee where employeeid = ?");
 		query.setParameter(1, employeeId);
 		int result = query.executeUpdate();
-		if(result != 1) { // 失敗
-			return false;  //  失敗したら false が返る
+		if (result != 1) { // 失敗
+			return false; // 失敗したら false が返る
 		}
 		return true;
 	}
-	
-	
+
+	// 検索
+	@SuppressWarnings("unchecked")
+	public List<Employee> find(String departmentId, String employeeId, String word) {
+		// 注意 引数のdepartmentId 空文字とnullの可能ある employeeId word ""空文字の可能性ある
+
+		String sql = "select * from employee";
+		String where = ""; // where句
+		int depIdIndex = 0; // プレースホルダーの位置を指定する 0だと、プレースホルダーは使用しないことになる
+		int empIdIndex = 0;
+		int wordIndex = 0;
+
+		if (departmentId == null) {
+			departmentId = "";
+		}
+		if (departmentId.equals("")) {
+			// 未指定の時 何もしない depIdIndex 0 のまま変更無し
+		} else {
+			where = " where departmentid = ?"; // 代入する 注意カラム名を全て小文字にすること departmentid また、前後半角空白入れてつなぐので注意
+			depIdIndex = 1; // 変更あり
+		}
+		// この時点では、 depIndex は、 0 か 1 になってる
+
+		if (employeeId.equals("")) {
+			// 未指定の時 何もしない depIdIndex 0 か 1 empIdIndex 0 のまま変更無し
+		} else {
+			if (where.equals("")) { // 入力があり、かつ、where句が 空文字の時(depIdIndex 0) この時、empIdIndex は 1 に変更
+				where = " where employeeid = ?"; // 代入する カラム名を全て小文字 employeeid
+			} else {
+				where += " and employeeid = ?"; // where句はすでにあるので(depIdIndex 1) 二項演算子の加算代入演算子を使って連結 この時 empIdIndex は 2
+												// に変更
+			}
+			empIdIndex = depIdIndex + 1;
+		}
+		// この時点では、 depIndex は、 0 か 1 になってる empIdIndex は、 0 か 1 か 2 になってる
+
+		if (word.equals("")) {
+			// 未指定の時何もしない、 depIdIndex 0 か 1 empIdIndex 0 か 1 か 2 のまま変更無し
+		} else {
+			if (where.equals("")) { // 入力があり、かつ、where句が 空文字の時(depIdIndex 0 empIdIndex 0) この時 wordIndex は 1 に変更
+				where = " where name like ?"; // 代入
+			} else if (where.equals(" where departmentid = ?")) {
+				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+			} else if (where.equals(" where employeeid = ?")) {
+				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+			} else if (where.equals(" where departmentid = ? and employeeid = ?")) {
+				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+			}
+			wordIndex = depIdIndex + empIdIndex + 1;
+		}
+
+		Query query = entityManager.createNativeQuery(sql + where);
+		if (depIdIndex > 0) {
+			query.setParameter(depIdIndex, departmentId);
+		}
+		if (empIdIndex > 0) {
+			query.setParameter(empIdIndex, employeeId);
+		}
+		if (wordIndex > 0) {
+			query.setParameter(wordIndex, "%" + word + "%");
+		}
+		return query.getResultList(); // 結果リスト 型のないリストを返す
+	}
+
+	// 検索こっちは使わない
+//	@SuppressWarnings("unchecked")
+//	public List<Employee> find2(String departmentId, String employeeId, String word) {
+//		// 注意 引数のdepartmentId 空文字とnullの可能ある employeeId word ""空文字の可能性ある
+//		List<Employee> list = new ArrayList<Employee>();
+//
+//		String sql = "select * from employee";
+//		String where = ""; // where句
+//		int depIdIndex = 0; // プレースホルダーの位置を指定する 0だと、プレースホルダーは使用しないことになる
+//		int empIdIndex = 0;
+//		int wordIndex = 0;
+//
+//		if (departmentId == null) {
+//			departmentId = "";
+//		}
+//		if (departmentId.equals("")) {
+//			// 未指定の時 何もしない depIdIndex 0 のまま変更無し
+//		} else {
+//			where = " where departmentid = ?"; // 代入する 注意カラム名を全て小文字にすること departmentid また、前後半角空白入れてつなぐので注意
+//			depIdIndex = 1; // 変更あり
+//		}
+//		// この時点では、 depIndex は、 0 か 1 になってる
+//
+//		if (employeeId.equals("")) {
+//			// 未指定の時 何もしない depIdIndex 0 か 1 empIdIndex 0 のまま変更無し
+//		} else {
+//			if (where.equals("")) { // 入力があり、かつ、where句が 空文字の時(depIdIndex 0) この時、empIdIndex は 1 に変更
+//				where = " where employeeid = ?"; // 代入する カラム名を全て小文字 employeeid
+//			} else {
+//				where += " and employeeid = ?"; // where句はすでにあるので(depIdIndex 1) 二項演算子の加算代入演算子を使って連結 この時 empIdIndex は 2
+//												// に変更
+//			}
+//			empIdIndex = depIdIndex + 1;
+//		}
+//		// この時点では、 depIndex は、 0 か 1 になってる empIdIndex は、 0 か 1 か 2 になってる
+//
+//		if (word.equals("")) {
+//			// 未指定の時何もしない、 depIdIndex 0 か 1 empIdIndex 0 か 1 か 2 のまま変更無し
+//		} else {
+//			if (where.equals("")) { // 入力があり、かつ、where句が 空文字の時(depIdIndex 0 empIdIndex 0) この時 wordIndex は 1 に変更
+//				where = " where name like ?"; // 代入
+//			} else if (where.equals(" where departmentid = ?")) {
+//				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+//			} else if (where.equals(" where employeeid = ?")) {
+//				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+//			} else if (where.equals(" where departmentid = ? and employeeid = ?")) {
+//				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+//			}
+//			wordIndex = depIdIndex + empIdIndex + 1;
+//		}
+//
+//		Query query = entityManager.createNativeQuery(sql + where);
+//		if (depIdIndex > 0) {
+//			query.setParameter(depIdIndex, departmentId);
+//		}
+//		if (empIdIndex > 0) {
+//			query.setParameter(empIdIndex, employeeId);
+//		}
+//		if (wordIndex > 0) {
+//			query.setParameter(wordIndex, "%" + word + "%");
+//		}
+//		List resultRist = query.getResultList(); // 結果リスト 型のないリストを返す
+//		// list はArrayList<E> です。中には要素としてObject型の配列オブジェクトObject[11]が入ってます。
+//		Employee employee = new Employee();
+//		Iterator itr = resultRist.iterator();
+//		while (itr.hasNext()) {
+//			Object[] object = (Object[]) itr.next(); // next() 反復処理で次の要素を返します。
+//			// [EMP0001, 山田 太郎, 100, 1, 1, 111-1111, 千葉県, 千代田区, D01, 2000-12-10, 2000-12-12]
+//			// Object型の配列オブジェクトObject[11] は、要素が11個あるので、先頭の要素から取得していく
+//
+//			String findResultEmpId = (String) object[0]; // 左辺を String.valueOf(obj[0]); にしてもいい
+//			String name = (String) object[1]; // 左辺を String.valueOf(obj[1]); にしてもいい
+//			int age = (int) object[2]; // int age = Integer.parseInt(String.valueOf(obj[2]));
+//			int gender = (int) object[3]; // int gender = Integer.parseInt(String.valueOf(obj[3]));
+//			int photoId = (int) object[4]; // int photoId = Integer.parseInt(String.valueOf(obj[4]));
+//			String zipNumber = (String) object[5];// String.valueOf(obj[5]);
+//			String pref = (String) object[6];// String.valueOf(obj[6]);
+//			String address = (String) object[7];// String.valueOf(obj[7]);
+//			String findResultDepartmentId = (String) object[8];// String.valueOf(obj[8]);
+//			// 入社日
+//			// 下でもOK
+//			// java.sql.Date sqlHireDate = (Date)object[9]; // 左辺を (new
+//			// SimpleDateFormat("yyyy-MM-dd")).format(object[9]); でもいける
+//			// java.util.Date utilHireDate = new java.util.Date(sqlHireDate.getTime());
+//			String str = (new SimpleDateFormat("yyyy-MM-dd")).format(object[9]);
+//			java.util.Date date = null;
+//			try {
+//				date = (new SimpleDateFormat("yyyy-MM-dd")).parse(str);
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+//			// 退社日
+//			java.sql.Date sqlRetirementDate = null;
+//			java.util.Date utilRetirementDate = null;
+//			if (object[10] != null) {
+//				sqlRetirementDate = (Date) object[10];
+//				utilRetirementDate = new java.util.Date(sqlRetirementDate.getTime());
+//			}
+//			// employeeインスタンスの各フィールドへセットする
+//			employee.setEmployeeId(findResultEmpId); // 引数で渡ってきた employeeIdは使わないこと
+//			employee.setName(name);
+//			employee.setAge(age);
+//			employee.setGender(gender);
+//			employee.setPhotoId(photoId);
+//			employee.setZipNumber(zipNumber);
+//			employee.setPref(pref);
+//			employee.setAddress(address);
+//			employee.setDepartmentId(findResultDepartmentId); // 引数で渡ってきた departmentIdは使わないこと
+//			employee.setHireDate(date);
+//			// employee.setHireDate(utilHireDate);
+//			employee.setRetirementDate(utilRetirementDate);
+//
+//			// 引数ありコンストラクタを使うと
+//			// Employee emp = new Employee(findResultEmpId, name, age, gender, photoId,
+//			// zipNumber, pref, address, findResultDepartmentId, utilHireDate,
+//			// utilRretirementDate);
+//			list.add(employee);
+//		}
+//		return list; // 見つからない時は、空のリストが返る
+//	}
 }
