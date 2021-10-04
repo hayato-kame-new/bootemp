@@ -54,12 +54,12 @@ public class FindController {
 				) {
 			
 			// フラッシュメッセージをFlash Scopeへ保存して リダイレクトする
-			String flashMsg = "検索結果です";
+			String flashMsg = "検索結果です。検索結果をCSVファイルに出力できます。";
 			List<Employee> employeeList = new ArrayList<Employee>(); // new で確保
 			// 検索結果はリストが返る、一つもデータが検索されない場合空のリストが返る ArrrayaListは、内部は、配列なので、[]が返る
 			employeeList = employeeService.find(departmentId, employeeId, word);
 			if(employeeList.size() == 0) { // 空のリストが返ってきたら 検索結果が0
-				flashMsg = "検索結果はありませんでした";
+				flashMsg = "検索結果はありませんでした。";
 			}
 			//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
 			redirectAttributes.addFlashAttribute("employeeList", employeeList);

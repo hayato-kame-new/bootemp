@@ -27,41 +27,37 @@ import com.kame.springboot.repositories.EmployeeRepository;
 
 @Service
 @Transactional
-public class EmployeeService {// リレーションの従テーブルの方は、createNativeQueryを使う。リポジトリの自動生成は使えない
+public class EmployeeService {  // リレーションの従テーブル 
 
 	@Autowired
 	EmployeeRepository employeeRepository;
 
-	// リポジトリには、限界がある リポジトリのメソッド自動生成できないものは、idを使ったものです。今回は、departmentIdですので。
-	// DAOに書かずに、サービスに定義します。@PersistenceContextは一つしかつけれない
-	// もしもコントローラに付けたら、コントローラの方を削除しないといけない
-	// リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、 EntityManager と Query を使う。
-	@PersistenceContext // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。
-						// その他の場所には書けません。１箇所だけ
+	// @PersistenceContextは一つしかつけれない コントローラなどの方につけてたら削除する
+	@PersistenceContext // EntityManagerのBeanを自動的に割り当てるためのもの サービスクラスにEntityManagerを用意して使う。その他の場所には書けません。１箇所だけ
 	private EntityManager entityManager;
 
 	@Autowired
 	LogicBean logicBean;
 
 	/**
-	 * リポジトリの自動生成機能で作る、findAll()メソッドだと、更新をした後に、更新したデータが一番後ろになってしまうため、使わない。
-	 * PostgreSQL だと、order by employeeId を付けないと、順番が、更新されたのが一番最後の順になってします。
-	 * レコードを全件取得する。 リポジトリのメソッド自動生成について p248
-	 * 
+	 * これはエラー出るので使わない.レコードを全件取得するメソッド.  idが、employeeIdのため メソッドの自動生成使えない.
+	 * リポジトリのメソッドの自動生成機能で作るfindAll()メソッドも使わない.
 	 * @return List<Department>
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Employee> findAllOrderByEmpId() { // 簡単なものはリポジトリの メソッド自動生成機能で
-		// findAll()メソッドは、JpaRepositoryに辞書によってメソッドの自動生成機能がある リポジトリのメソッド自動生成
-		// idが、employeeIdのため、自動生成使えない？らしい
-		// エラー
+	public List<Employee> findAllOrderByEmpId() { 
 		return employeeRepository.findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();
 	}
 
+	/**
+	 * こっちを使う。レコードを全件取得する. 
+	 * PostgreSQL だと order by employeeid を付けないと 順番が更新されたのが一番最後の順になってしまう.
+	 * createNativeQuery  カラム名は全部小文字にする  エンティティクラスに @Column(name = "employeeid")  全て小文字で書く
+	 * @return List<Employee>
+	 */
 	@SuppressWarnings("unchecked")
 	public List<Employee> getEmpListOrderByAsc() {
-
-		Query query = entityManager.createNativeQuery("select * from employee  order by employeeid asc");
+		Query query = entityManager.createNativeQuery("select * from employee  order by employeeid asc"); //  order by employeeid が必要です
 		List<Employee> empList = query.getResultList();
 		return empList;
 	}
@@ -308,34 +304,35 @@ public class EmployeeService {// リレーションの従テーブルの方は�
 			where = " where departmentid = ?"; // 代入する 注意カラム名を全て小文字にすること departmentid また、前後半角空白入れてつなぐので注意
 			depIdIndex = 1; // 変更あり
 		}
-		// この時点では、 depIndex は、 0 か 1 になってる
 
 		if (employeeId.equals("")) {
-			// 未指定の時 何もしない depIdIndex 0 か 1 empIdIndex 0 のまま変更無し
+			// 未指定の時 何もしない 
 		} else {
-			if (where.equals("")) { // 入力があり、かつ、where句が 空文字の時(depIdIndex 0) この時、empIdIndex は 1 に変更
+			if (where.equals("")) { 
 				where = " where employeeid = ?"; // 代入する カラム名を全て小文字 employeeid
+				empIdIndex = 1;
 			} else {
-				where += " and employeeid = ?"; // where句はすでにあるので(depIdIndex 1) 二項演算子の加算代入演算子を使って連結 この時 empIdIndex は 2
-												// に変更
+				where += " and employeeid = ?"; // where句はすでにあるので 二項演算子の加算代入演算子を使って連結 												
+				empIdIndex = depIdIndex + 1;
 			}
-			empIdIndex = depIdIndex + 1;
 		}
-		// この時点では、 depIndex は、 0 か 1 になってる empIdIndex は、 0 か 1 か 2 になってる
 
 		if (word.equals("")) {
-			// 未指定の時何もしない、 depIdIndex 0 か 1 empIdIndex 0 か 1 か 2 のまま変更無し
+			// 未指定の時何もしない
 		} else {
-			if (where.equals("")) { // 入力があり、かつ、where句が 空文字の時(depIdIndex 0 empIdIndex 0) この時 wordIndex は 1 に変更
-				where = " where name like ?"; // 代入
+			if (where.equals("")) { 
+				where = " where name like ?"; // 代入  
+				 wordIndex = 1;
 			} else if (where.equals(" where departmentid = ?")) {
-				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結 
+				 wordIndex = depIdIndex + 1;
 			} else if (where.equals(" where employeeid = ?")) {
-				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結 
+				 wordIndex = empIdIndex + 1;
 			} else if (where.equals(" where departmentid = ? and employeeid = ?")) {
-				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結
+				where += " and name like ?"; // 二項演算子の加算代入演算子を使って連結 
+				 wordIndex = depIdIndex + empIdIndex + 1;
 			}
-			wordIndex = depIdIndex + empIdIndex + 1;
 		}
 
 		Query query = entityManager.createNativeQuery(sql + where);
@@ -348,7 +345,7 @@ public class EmployeeService {// リレーションの従テーブルの方は�
 		if (wordIndex > 0) {
 			query.setParameter(wordIndex, "%" + word + "%");
 		}
-		return query.getResultList(); // 結果リスト 型のないリストを返す
+		return query.getResultList(); // 結果リスト 型のないリストを返す 
 	}
 
 	// 検索こっちは使わない

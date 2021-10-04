@@ -1,13 +1,12 @@
 package com.kame.springboot;
 
-
-
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -47,11 +46,15 @@ public class EmployeeController { // コントローラでは、サービスク�
 	@Autowired
 	ViewBean viewBean;
 	
+	// indexリクエストハンドラでセッションスコープ使う、異なるコントローラCSVControllerと共有する セッションスコープBeanをつかうため
+	@Autowired
+	HttpSession session;
+	
 	  // ファイルのアップロード時のパターンチェック
     private final java.util.regex.Pattern PATTERN_IMAGE = java.util.regex.Pattern.compile("^image\\/(jpeg|jpg|png)$");
 
 
-	/**
+    /**
 	 * 社員一覧表示
 	 * 
 	 * @param mav
@@ -63,23 +66,31 @@ public class EmployeeController { // コントローラでは、サービスク�
 			Model model, // Flash Scopeから値の取り出しに必要
 			ModelAndView mav) {
 		String title = "index";
-		// 削除後や検索後、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
+		// 削除後や検索後やCSV出力後など、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
 		String flashMsg = "";
 		if (model.getAttribute("flashMsg") != null){
 			flashMsg = (String) model.getAttribute("flashMsg");// 返り値がObject型なので、キャストすること
 		}
-		//String flashMsg = (String) model.getAttribute("flashMsg"); // 返り値がObject型なので、キャストすること
-		// ここで、actionとって、findだったたら。。。
+		// Flash Scopeから取り出すには、Modelインスタンスの getAttributeメソッドを使う
 		String action = (String) model.getAttribute("action"); // Flash Scopeから取り出す
 		List<Employee> employeeList = new ArrayList<Employee>();
+		// 社員一覧を表示する時
 		if (action == null) {
 			employeeList = employeeService.getEmpListOrderByAsc(); // 一覧を辞書順で、昇順で取得する
 		}
+		// 検索結果を出した後に、リダイレクトしてきた時
 		if(action != null && action.equals("find")) {  // 先に action != null を書いてnullチェックすること
 			employeeList = (List<Employee>) model.getAttribute("employeeList"); // 検索結果をFlash Scopeから取り出す
 			title = "find result";
+			mav.addObject("action", action);
 		}
-		
+		// CSVファイル出力した後に、リダイレクトしてきた時
+		if(action != null && action.equals("csv")) {  // 先に action != null を書いてnullチェックすること
+			employeeList = (List<Employee>) model.getAttribute("employeeList"); // 検索結果をFlash Scopeから取り出す
+			title = "csv";
+		}
+		// CSVControllerで使いたいので、セッションスコープへ保存 異なるコントローラCSVControllerで使いたいのでセッションスコープへ 保存する
+		session.setAttribute("employeeList", employeeList); 
 		mav.setViewName("employee");
 		mav.addObject("title", title);
 		 mav.addObject("flashMsg", flashMsg); // 検索結果が0の時には、検索結果が見つからないメッセージ

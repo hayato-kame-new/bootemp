@@ -23,11 +23,14 @@ import org.springframework.lang.Nullable;
 import com.kame.springboot.annotation.DayCheck;  
 
 // Departmentエンティティ  Photoエンティティの従エンティティ(子エンティティ)
+//@SessionScope はSpring4.3から使用できるようになり、元は
+// @Scope(value = “session”, proxyMode = ScopedProxyMode.TARGET_CLASS) 自身より狭いスコープのものも DI コンテナから受け取る実装になっていても問題ない作りになっている。
 
 @Entity
 @Table(name = "employee")
 @DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")
-public class Employee {
+// @SessionScope //  @Scope(value = “session”, proxyMode = ScopedProxyMode.TARGET_CLASS) は古い方なので、@SessionScopeを使ってください
+public class Employee {  // セッションスコープで使いたいBean @SessionScope は、複数のController間で共有したい場合に使う
 	
 	@Id
 	@Column(name = "employeeid")  // 全て小文字にしてください、PostgreSQL のカラム名は全て小文字じゃないとエラーになるので
