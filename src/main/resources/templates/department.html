@@ -24,13 +24,15 @@ div {
 	margin-bottom: 15px;
 }
 .err { color: red; }
+.flashMsg { color: skyblue; }
 </style>
 </head>
 <body>
 <a href="/employee" th:href="@{/employee}">社員一覧ページへ</a>
 	<hr/>
 	<h3 th:text="部署一覧"></h3>
-	<p th:if="${departmentList} == null " th:text="現在登録されている部署はありません。">
+	<p th:if="${departmentList == null }" th:text="現在登録されている部署はありません。">
+	<p th:if="${flashMsg != null}" th:text="${flashMsg}" class="flashMsg">
 	<table>
 		<tr><th>部署ID</th><th>部署名</th><th></th><th></th></tr>
 		<tr th:each="dep : ${departmentList}" th:object="${dep}">

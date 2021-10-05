@@ -2,6 +2,7 @@ package com.kame.springboot.model;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -92,12 +93,15 @@ public class Employee {
 	
 	//リレーション 相互参照なEntityクラス化する  このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。
 	// employeeテーブルのphotoidカラムが(photoテーブルのプライマリーキーphotoidカラム)とリレーション  クラス化した場合に Photoエンティティクラスへの参照になります。
-	// 従テーブルのemployeeテーブルに外部制約つけた
+	// 従テーブルのemployeeテーブルに外部制約つけた 更新と削除に cascadeつけてる
+//
 //	ALTER TABLE employee
 //	ADD FOREIGN KEY (photoId) 
-//	REFERENCES photo (photoId);	
+//	REFERENCES photo (photoId)
+//	on delete cascade
+//	on update cascade;
 	// @Valid   // ネストしたJavaBeansもチェック対象となる 今回はいらない
-	@OneToOne
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
 	Photo photo;  // @OneToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
 	
 	/**

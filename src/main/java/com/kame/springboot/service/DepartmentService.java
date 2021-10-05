@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -18,8 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kame.springboot.model.Department;
 import com.kame.springboot.repositories.DepartmentRepository;
 
-@Service
+
 @Transactional   // クラスに対して記述した設定はメソッドで記述された設定で上書きされる
+@Service
 public class DepartmentService { //リレーションの 主テーブルの方は、普通にリポジトリの自動生成が使える
 	
 		// フィールドとして、DepartmentRepositoryインタフェースを実装した内部クラスのインスタンスを リポジトリとして 組み込む
@@ -117,6 +119,8 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 	 * ロールバックの注意点として、非検査例外(RuntimeException及びそのサブクラス)が発生した場合はロールバックされるが、検査例外(Exception及びそのサブクラスでRuntimeExceptionのサブクラスじゃないもの)が発生した場合はロールバックされずコミットされる
 	 * RuntimeException以外の例外が発生した場合もロールバックしたいので @Transactional(rollbackFor = Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します。
 	 * 呼び出し元つまりコントローラ のメソッドでtry-catchする ここで例外処理をしてはいけない コントローラには @Transactional をつけないこと
+	 * @Transactional(readOnly=false, rollbackFor=Exception.class) をつけること // throws宣言が必要  呼び出しもとへ投げる
+	 * throws DataIntegrityViolationException　が必要　
 	 * @param department
 	 * @return
 	 * @throws DataIntegrityViolationException
@@ -156,11 +160,18 @@ public class DepartmentService { //リレーションの 主テーブルの方�
 	/**
 	 * EntityManagerとQueryを使う。JPQLクエリー文 createQueryメソッド使う
 	 * エンティティに@Column(name = departmentid)  departmentid小文字で書く必要がある カラム名を全て小文字の設定にしておく
+	 * ロールバックの注意点として、非検査例外(RuntimeException及びそのサブクラス)が発生した場合はロールバックされるが、検査例外(Exception及びそのサブクラスでRuntimeExceptionのサブクラスじゃないもの)が発生した場合はロールバックされずコミットされる
+	 * RuntimeException以外の例外が発生した場合もロールバックしたいので @Transactional(rollbackFor = Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します。
+	 * 呼び出し元つまりコントローラ のメソッドでtry-catchする ここで例外処理をしてはいけない コントローラには @Transactional をつけないこと
+	 * @Transactional(readOnly=false, rollbackFor=Exception.class) をつけること
+	 * throws PersistenceException が必要　
+	 * 
 	 * @param departmentId
 	 * @return
+	 * @throws 
 	 */
-	@Transactional(readOnly=false)
-	public boolean deleteJPQL(String departmentId) {
+	@Transactional(readOnly=false, rollbackFor=Exception.class) // ここに@Transactionalをつけて、コントローラにはつけないでください
+	public boolean delete(String departmentId) throws PersistenceException {  // throwsして、呼び出しもとで
 		Query query = entityManager.createQuery("delete from Department where departmentid = :departmentId");
 		query.setParameter("departmentId", departmentId);
 		int result = query.executeUpdate(); // 成功したデータ数が返る 戻り値 int型

@@ -93,7 +93,7 @@ public class EmployeeController { // コントローラでは、サービスク�
 		session.setAttribute("employeeList", employeeList); 
 		mav.setViewName("employee");
 		mav.addObject("title", title);
-		 mav.addObject("flashMsg", flashMsg); // 検索結果が0の時には、検索結果が見つからないメッセージ
+		mav.addObject("flashMsg", flashMsg); // 検索結果が0の時には、検索結果が見つからないメッセージ
 		mav.addObject("employeeList", employeeList);
 		return mav;
 	}

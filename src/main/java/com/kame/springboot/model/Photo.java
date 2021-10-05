@@ -1,6 +1,5 @@
 package com.kame.springboot.model;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,12 +27,13 @@ public class Photo {
 	private String mime;  // contentTypeのこと "image/jpeg"  "image/png"など 　MIMEタイプ "タイプ/サブタイプ" nullでも構わない
 	
 	// Photo側が、親エンティティ Photo側は 社員を持っています。1対1のリレーション
-	// 必要なら、cascadeも子テーブル側に書く
+	// 必要なら、cascadeを子テーブル側に書く 
 	// @JoinColumn(name = "photoid")  をつけることによって参照管理テーブル(3つめの中間テーブル）が作られなくなります
 	// 参照管理テーブルがない場合、employeeの中身は従業員テーブルから自動的に作られます。	
-	 @OneToOne( cascade = CascadeType.ALL) // 1対1 写真は、カスケードつける
+	 // @OneToOne( cascade = CascadeType.ALL) // 1対1 写真は、カスケードつける
+	 @OneToOne
 	 @JoinColumn(name = "photoid")  // 参照管理テーブル(3つめの中間テーブル）が作られなくなります
-	 Employee employee;  // OneToOne  なので、フィールド名は単数形にしてください。
+	 Employee employee;  // OneToOne  なので、フィールド名は単数形に
 	
 	/**
 	 * 引数なしのコンストラクタ
