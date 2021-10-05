@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 // javax.validation.constraints.NotEmpty  こちらを使う
@@ -29,14 +28,13 @@ import com.kame.springboot.annotation.DayCheck;
 @Entity
 @Table(name = "employee")
 @DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")
-// @SessionScope //  @Scope(value = “session”, proxyMode = ScopedProxyMode.TARGET_CLASS) は古い方なので、@SessionScopeを使ってください
-public class Employee {  // セッションスコープで使いたいBean @SessionScope は、複数のController間で共有したい場合に使う
+public class Employee {
 	
 	@Id
-	@Column(name = "employeeid")  // 全て小文字にしてください、PostgreSQL のカラム名は全て小文字じゃないとエラーになるので
+	@Column(name = "employeeid")  // 全て小文字にしてください、PostgreSQL のカラム名は全て小文字じゃないとエラーになる
 	private String employeeId;
 		
-	@Column(name = "name", length=10485760 )
+	@Column(name = "name" )
 	@NotEmpty(message="名前を入力してください")
 	private String name;
 	
@@ -50,10 +48,10 @@ public class Employee {  // セッションスコープで使いたいBean @Sess
 	@Max(value=2, message = "性別を選択してください")
 	private int gender; // 性別 1:男 2:女
 	
-	@Column(name = "photoid")  // 全て小文字のカラム名を指定すること フォームからの送信では何もバリデーションつけないこと
+	@Column(name = "photoid")  // 全て小文字のカラム名
 	private int photoId;  // リレーションがあるカラム
 	
-	@Column(name = "zipnumber")  // 全て小文字のカラム名を指定すること
+	@Column(name = "zipnumber")  // 全て小文字のカラム名
 	@NotEmpty(message="郵便番号を入力してください")
 	@Pattern(regexp = "^[0-9]{3}-[0-9]{4}$", message = "郵便番号は半角数字000-0000 の形式で入力してください")
 	private String zipNumber;
@@ -66,59 +64,51 @@ public class Employee {  // セッションスコープで使いたいBean @Sess
 	@NotEmpty(message = "住所を入力してください")
 	private String address;
 	
-	@Column(name = "departmentid") // 全て小文字のカラム名を指定すること @NotEmpty つけないでくださいフォームからは送りません。
-	private String departmentId; // リレーションのあるカラム フォームのname属性は 下のリレーションになってる
+	@Column(name = "departmentid") // 全て小文字のカラム名 @NotEmpty つけない 新規の時にはnullが送られるので
+	private String departmentId; // リレーションのあるカラム
 	
-	// メッセージプロパティに、  typeMismatch.java.util.Date=yyyy/MM/dd形式で入力してください     を追加すること！！これで、TypeMismatchException発生した時に、出る長いエラーメッセージを、上書きして変更できる
-	@DateTimeFormat(iso = ISO.DATE, fallbackPatterns = { "yyyy/MM/dd", "yyyy-MM-dd" })  //iso = ISO.DATE だと 最も一般的な ISO 日付形式 yyyy-MM-dd  たとえば、"2000-10-31"
-	@Column(name = "hiredate") // 全て小文字のカラム名を指定すること
-	@NotNull(message="入社日を入力してください")  // 日付には、@NotNullを使ってください
-	private Date hireDate; 
+	// メッセージプロパティに、  typeMismatch.java.util.Date=yyyy/MM/dd形式で入力してください     を追加する これで TypeMismatchException発生した時に、出る長いエラーメッセージを、上書きして変更できる
+	@DateTimeFormat(iso = ISO.DATE, fallbackPatterns = { "yyyy/MM/dd", "yyyy-MM-dd" })  //iso = ISO.DATE だと 最も一般的な ISO 日付形式 yyyy-MM-dd  たとえば、"2000-10-31"   fallbackPatterns に設定したものは、エラーにしないで、受け取ってくれる
+	@Column(name = "hiredate") // 全て小文字のカラム名
+	@NotNull(message="入社日を入力してください")  // 日付には、@NotNullを使う
+	private Date hireDate; // java.util.Date
 	
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@Column(name = "retirementdate", nullable = true) // 全て小文字のカラム名を指定すること
-	 @Nullable  // org.springframework.langパッケージの アノテーション 先に、相関関係のバリデーションの方が行われるらしい
+	@Column(name = "retirementdate", nullable = true) // 全て小文字のカラム名
+	@Nullable  // org.springframework.langパッケージのアノテーション これよりも先に、相関関係のバリデーションの方が行われるらしい
 	private Date retirementDate;  // java.util.Date 
 
-	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Departmentエンティティに対して、従エンティティです。
-	// 従業員側の部署ID(部署のプライマリーキー)は  クラス化した場合に 部署クラスへの参照になります。
-	// employeeテーブルにdepartmentのカラムがあるわけではありません。なくて良い。
-	// 従テーブルのemployeeテーブルに外部制約つけた
+	//  リレーション 相互参照なEntityクラス化する このEmployeeエンティティは、Departmentエンティティに対して、従エンティティです。
+	// employeeテーブルのdepartmentidカラムが(departmentテーブルのプライマリーキーdepartmentidカラム)   クラス化した場合に Departmentエンティティクラスへの参照になります。
+	// 従テーブルのemployeeテーブルに外部制約つけた  必要なら、こっちの従テーブル側にcascadeを書きますが、  cascade必要なければ付けない 
+	// 今回は、子テーブルのemployeeのデータを全て消しても、Departmentは残したいので、子テーブル側にはcascadeはつけません
 //	ALTER TABLE employee
 //	ADD FOREIGN KEY (departmentId) 
-//	REFERENCES department (departmentId);
-	
-	
-	//model.Employee column: departmentid (should be mapped with insert="false" update="false")のエラーが出たら、insertable=false,  updatable=false　を書くこと
-	
-	// @JoinColumn(name="departmentid", insertable=false,  updatable=false) // これを付け足したが、果たして良いのか？？？？
+//	REFERENCES department (departmentId);	
+	// @Valid   // ネストしたJavaBeansもバリデーションチェック対象となる ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつける 今回はいらない
 	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
-	@Valid   // ネストしたJavaBeansもバリデーションチェック対象となる ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつける
-	Department department;  // @ManyToOne  だから、フィールド名は、単数形にしてください。アクセッサも追加すること ゲッター セッター
+	Department department;  // @ManyToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
+
 	
-	// 相互参照なEntityクラス化する  リレーション このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。
-	// 従業員側のphotoID(photoテーブルのプライマリーキー)は  クラス化した場合に Photoクラスへの参照になります。
-	// employeeテーブルにphotoのカラムがあるわけではありません。なくていい。
+	//リレーション 相互参照なEntityクラス化する  このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。
+	// employeeテーブルのphotoidカラムが(photoテーブルのプライマリーキーphotoidカラム)とリレーション  クラス化した場合に Photoエンティティクラスへの参照になります。
 	// 従テーブルのemployeeテーブルに外部制約つけた
 //	ALTER TABLE employee
 //	ADD FOREIGN KEY (photoId) 
-//	REFERENCES photo (photoId);
-	
+//	REFERENCES photo (photoId);	
+	// @Valid   // ネストしたJavaBeansもチェック対象となる 今回はいらない
 	@OneToOne
-	@Valid   // ネストしたJavaBeansもチェック対象となる
-	Photo photo;  // @OneToOne  だから、フィールド名は、単数形にしてください。アクセッサも追加すること ゲッター セッター
+	Photo photo;  // @OneToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
 	
-	
-
 	/**
-	 * 引数なしのコンストラクタ
+	 * 引数なしのコンストラクタ.
 	 */
 	public Employee() {
 		super();
 	}
 
 	/**
-	 * 引数ありのコンストラクタ
+	 * 引数ありのコンストラクタ.
 	 * @param employeeId
 	 * @param name
 	 * @param age
@@ -151,16 +141,15 @@ public class Employee {  // セッションスコープで使いたいBean @Sess
 	}
 	
 	/**
-	 * 住所を表示する fullAdressプロパティ を取得する
+	 * 住所を表示するfullAdressプロパティ CSVファイル出力の時使う.
 	 * @return String
 	 */
 	public String getFullAddress() {
 		return "〒" + this.zipNumber + this.pref + this.address;
 	}
 	
-
 	/**
-	 * 性別をint型からString型の表示にする
+	 * 性別をint型からString型の表示にする CSVファイル出力の時に使う.
 	 * @param gender
 	 * @return str
 	 */
@@ -176,9 +165,8 @@ public class Employee {  // セッションスコープで使いたいBean @Sess
 		}
 		return str;
 	}
-
 	
-	
+	// アクセッサ
 	public String getEmployeeId() {
 		return employeeId;
 	}
@@ -281,8 +269,5 @@ public class Employee {  // セッションスコープで使いたいBean @Sess
 
 	public void setPhoto(Photo photo) {
 		this.photo = photo;
-	}
-	
-	
-	
+	}		
 }

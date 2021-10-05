@@ -12,47 +12,53 @@ import org.springframework.stereotype.Component;
 import com.kame.springboot.model.Department;
 import com.kame.springboot.service.DepartmentService;
 
-@Component
+@Component  // コンポーネントにする。Bean化して使うクラスになる
 public class ViewBean {  
 
-	// フィールド
+	// フィールド宣言
 	@Autowired
 	DepartmentService departmentService;
 
-	// コンストラクタ
-	@Autowired
+	@Autowired  // このクラスを コンポーネントにするには、 コンストラクタに、@Autowired　を付けます
 	public ViewBean() {
 		super();
 	}
 	
-	
-	// マップを作って返す  性別のラジオボタンのためのMap   LinkedHashMap  は追加された順番を保持する
+	/**
+	 * 性別のラジオボタンのためのMapを作って返す. 
+	 * @return Map<Integer, String>
+	 */
 	public Map<Integer, String> getGenderMap() {
-		Map<Integer, String> genderMap = new LinkedHashMap<Integer, String>();
+		Map<Integer, String> genderMap = new LinkedHashMap<Integer, String>();  // LinkedHashMap  は追加された順番を保持する
 		genderMap.put(1, "男性");
 		genderMap.put(2, "女性");
 		return genderMap;
 	}
 	
-	// マップを作って返す  selectタグのドロップダウンリストの都道府県のMap    LinkedHashMap  は追加された順番を保持する
+	/**
+	 * selectタグのドロップダウンリストの都道府県のMapを作って返す.
+	 * @return Map<Integer, String>
+	 */
 	public Map<Integer, String> getPrefMap() {
 		 Map<Integer, String> prefMap = new LinkedHashMap<Integer, String>();
-		List<String> list = new ArrayList<String>(Arrays.asList("東京都", "神奈川県", "埼玉県", "千葉県", "茨城県"));
+		List<String> list = new ArrayList<String>(Arrays.asList("東京都", "神奈川県", "埼玉県", "千葉県", "茨城県")); // LinkedHashMap  は追加された順番を保持する
 		for(int i = 0; i < list.size(); i++) {
 			prefMap.put(i, list.get(i));
 		}
 		return prefMap;
 	}
 	
-	// マップを作って返す  selectタグのドロップダウンリストの部署のMap   LinkedHashMap  は追加された順番を保持する
+	/**
+	 * selectタグのドロップダウンリストの部署のMapを作って返す.
+	 * @return Map<Integer, String>
+	 */
 	public Map<String, String> getDepartmentMap() {
-		 Map<String, String> depMap = new LinkedHashMap<String, String>();
+		 Map<String, String> depMap = new LinkedHashMap<String, String>();  // LinkedHashMap  は追加された順番を保持する
 		 List<Department> depList = departmentService.findAllOrderByDepId();
 		for(Department dep : depList) {
 			depMap.put(dep.getDepartmentId(), dep.getDepartmentName()); // D01=総務部  D02=営業部  と ループで putされてる
 		}		
 		return depMap;
 	}
-
 
 }

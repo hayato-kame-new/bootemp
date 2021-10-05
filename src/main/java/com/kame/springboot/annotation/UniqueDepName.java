@@ -12,7 +12,6 @@ import javax.validation.ReportAsSingleViolation;
 
 import com.kame.springboot.validator.DepartmentNameValidator;
 
-
 @Documented
 @Constraint(validatedBy = {DepartmentNameValidator.class})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.PARAMETER})
@@ -20,7 +19,6 @@ import com.kame.springboot.validator.DepartmentNameValidator;
 @ReportAsSingleViolation
 public @interface UniqueDepName {  // アノテーションクラス
 	
-
 	String message() default "{com.kame.springboot.UniqueDepName.message}";
 
     Class<?>[] groups() default {};

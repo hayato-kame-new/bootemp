@@ -40,5 +40,4 @@ public @interface DayCheck {
       public @interface List {
     	  DayCheck[] value();
        }
-
 }

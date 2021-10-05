@@ -7,28 +7,19 @@ import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-//サービスから、このロジックを呼び出して使う ロジックは、サービス同士で共通の処理をまとめるための場所
-	// サービスの中で、リポジトリをフィールドとしてBeanインスタンスをメンバとしているように、
-	// このロジックのクラスも、まず、Bean化できるように、Beanクラスとして作り、サービスの中で、@Autowiredを使って、インスタンスを自動生成できるようにしていく。
-// これは クラスに@Component を付けます  コンストラクタに、@Autowired　を付けます。
-
-@Component
+@Component  // コンポーネントにする。Bean化して使うクラスになる
 public class LogicBean {
+	// このロジックのクラスは、サービスから呼び出して使う。ロジックは、サービス同士で共通の処理をまとめるための場所
+	// @Autowiredを使って、サービスクラスのフィールドメンバにすると、自動でインスタンスを自動生成してくれる Beanインスタンスをメンバにする
 
-	@Autowired
+	@Autowired  // このクラスを コンポーネントにするには、 コンストラクタに、@Autowired　を付けます
 	public LogicBean() {
 		super();
-		// TODO 自動生成されたコンストラクター・スタブ
 	}
 	
 	 /**
-     * データを全て読み込んでbyte配列に格納して返す インスタンスメソッド
-     * Beanとして、登録されると、@Autowiredをつけるだけで、フィールドとして宣言すると、
-     * 自動で、Beanインスタンスが生成されますので、
-     * staticなメソッド(静的メソッド クラスメソッド) じゃなくて、
-     * 非staticなメソッドとして、インスタンスメソッドを定義する
-     * このメソッドは、サービスクラスで利用する、サービスクラスの インスタンスフィールドとして、メンバに取り込んで利用する @Autowiredをつけると、自動でBeanインスタンスが生成される
-     * 
+     * データを全て読み込んでbyte配列に格納して返すインスタンスメソッド.
+     * このクラスがBeanとして登録されると、@Autowiredをつけてフィールドのメンバとして宣言するだけで、自動でBeanインスタンスが生成され利用できるようになる.
      * @param is
      * @return byte[]
      * @throws IOException
@@ -44,14 +35,7 @@ public class LogicBean {
             }
             bout.write(buffer, 0, len);  // 指定しただけoutputstreamにバッファに書き込みする　最後の端数も取り込めるようにする
         }
-        return bout.toByteArray(); // 戻り値 byte[] です
+        return bout.toByteArray(); // 戻り値 byte[] です   toByteArray()で、byte[]に変換してる
         // 取り込んだものをバイト配列にして戻している
     }
-
-    
-    // テスト用
-    public void logic_test() {
-    	System.out.println("Hello LogicBean!!");
-    }
-
 }

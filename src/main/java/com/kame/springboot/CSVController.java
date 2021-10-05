@@ -33,7 +33,6 @@ public class CSVController {
 		List employeeList = (List) session.getAttribute("employeeList");
 		// list はArrayList<E> です。中には要素としてObject型の配列オブジェクトObject[11]が入ってます。
 		
-		
 		// 新しいリストに詰め直す
 		Employee emp = null;
 		 List<Employee> employeeNewList = new ArrayList<Employee>();
@@ -90,11 +89,9 @@ public class CSVController {
 			 emp = new Employee(employeeId, name, age, gender, photoId,
 			 zipNumber, pref, address, departmentId, utilHireDate,
 			 utilRetirementDate);
-			 employeeNewList.add(emp); 
-			
+			 employeeNewList.add(emp); 			
 		}
-		
-		
+				
 		String file_name = "/csv_result.csv"; //  拡張子も書く
 		// Fileクラスのオブジェクトを作成 ユーザのデスクトップにファイルを作ろうとしている
 		File file = new File(System.getProperty("user.home") + "/Desktop" + file_name);
@@ -118,9 +115,8 @@ public class CSVController {
 				bw.write(String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s\n", "社員ID", "名前", "年齢", "性別", "写真ID", "住所", "部署ID",
 	                        "入社日", "退社日"));
 
-
-				 for(Employee employee : employeeNewList) {
-					 bw.write(String.format("%s,%s,%d,%d,%d,%s,%s,%tF,%tF\n", employee.getEmployeeId(), employee.getName(), employee.getAge(), employee.getGender(), employee.getPhotoId(), employee.getFullAddress(), employee.getDepartmentId(), employee.getHireDate(), employee.getRetirementDate()));
+				 for(Employee employee : employeeNewList) {  // ４番目のフォーマットは、文字列にして表示してます。 %s  にしてます
+					 bw.write(String.format("%s,%s,%d,%s,%d,%s,%s,%tF,%tF\n", employee.getEmployeeId(), employee.getName(), employee.getAge(), employee.getStringGender(employee.getGender()), employee.getPhotoId(), employee.getFullAddress(), employee.getDepartmentId(), employee.getHireDate(), employee.getRetirementDate()));
 				 }
 				 bw.flush();
 			} catch (FileNotFoundException e) {
@@ -150,8 +146,7 @@ public class CSVController {
 					}
 				}
 			}
-		}
-		
+		}		
 		//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
 		// addFlashAttributeメソッドです  Flash Scope 使う RedirectAttributes redirectAttributes をリクエストハンドラの引数に書く
 		redirectAttributes.addFlashAttribute("employeeList", employeeList); // セッションスコープから取得したものを、またセットする
@@ -162,6 +157,4 @@ public class CSVController {
 		return "redirect:/employee";
 	}
 	
-	
-
 }
