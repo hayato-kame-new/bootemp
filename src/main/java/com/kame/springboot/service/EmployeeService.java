@@ -40,40 +40,35 @@ public class EmployeeService {  // リレーションの従テーブル
 	LogicBean logicBean;
 
 	/**
-	 * これはエラー出るので使わない.レコードを全件取得するメソッド.  idが、employeeIdのため メソッドの自動生成使えない.
+	 * レコードを全件取得する.こっちはエラー出るので使わない.  idが、employeeIdのため メソッドの自動生成使えない.
 	 * リポジトリのメソッドの自動生成機能で作るfindAll()メソッドも使わない.
 	 * @return List<Department>
 	 */
-	@SuppressWarnings("unchecked")
-	public List<Employee> findAllOrderByEmpId() { 
-		return employeeRepository.findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();
-	}
+//	@SuppressWarnings("unchecked")
+//	public List<Employee> findAllOrderByEmpId() { 
+//		return employeeRepository.findByEmployeeIdIsNotNullOrderByEmployeeIdAsc();
+//	}
 
 	/**
-	 * こっちを使う。レコードを全件取得する. 
-	 * PostgreSQL だと order by employeeid を付けないと 順番が更新されたのが一番最後の順になってしまう.
-	 * createNativeQuery  カラム名は全部小文字にする  エンティティクラスに @Column(name = "employeeid")  全て小文字で書く
-	 * @return List<Employee>
+	 * レコードを全件取得する.こっちを使う 
+	 * order by employeeid を付けないと 順番が更新されたのが一番最後の順になってしまうのでorder byをつける.
+	 * @return list
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Employee> getEmpListOrderByAsc() {
-		Query query = entityManager.createNativeQuery("select * from employee  order by employeeid asc"); //  order by employeeid が必要です
-		List<Employee> empList = query.getResultList();
-		return empList;
+		Query query = entityManager.createNativeQuery("select * from employee  order by employeeid asc"); //  order by employeeid が必要です employeeidは小文字
+		List<Employee> list = query.getResultList();
+		return list;
 	}
 
 	/**
-	 * これ リレーションついてるから、 今回は、 id でなく、employeeId なので、リポジトリの自動生成機能で作るfindByIdを使えないため、
-	 * (findByIdは、エンティティを引数にできる) リポジトリとは関係なく、
-	 * リポジトリの、メソッド自動生成でできないような複雑なデータベースアクセスをするので、 EntityManager と Query
-	 * を使う。createNativeQueryを使う リレーションをつけてるので createQueryは使わない JPQL文は使わない 普通のSQL文を使う
-	 * サービスクラスに定義して利用する。 SQLクエリーの where employeeid のところ、employeeid という風に全て小文字にすること
+	 * エンティティ取得する リポジトリの自動生成機能で作るfindByIdを使えないid でなく、employeeId なので.(findByIdは、引数はidのほか エンティティも引数にできる)
 	 * 
 	 * @param employeeId
 	 * @return employee
 	 */
 	public Employee getEmp(String employeeId) {
-		Query query = entityManager.createNativeQuery("select * from employee where employeeid = ?");
+		Query query = entityManager.createNativeQuery("select * from employee where employeeid = ?");  // employeeidは全て小文字
 		query.setParameter(1, employeeId);
 		List<Employee> list = (List<Employee>) query.getResultList();
 		Iterator itr = list.iterator();
@@ -90,7 +85,7 @@ public class EmployeeService {  // リレーションの従テーブル
 			String zipNumber = String.valueOf(obj[5]);
 			String pref = String.valueOf(obj[6]);
 			String address = String.valueOf(obj[7]);
-			String departmentId = String.valueOf(obj[8]); // ここ編集時nullになってしまう。直すこと
+			String departmentId = String.valueOf(obj[8]);
 
 			java.sql.Date sqlHireDate = (Date) obj[9]; // 1999-11-11
 
@@ -124,29 +119,20 @@ public class EmployeeService {  // リレーションの従テーブル
 			// utilRretirementDate);
 			resultlist.add(emp);
 		}
-		// System.out.println(resultlist.size());
-		Employee returnEmp = resultlist.get(0);
-
-		return returnEmp;
-
-		// List<Employee[]> list = query.getResultList(); // リストにするなら
-
+		Employee employee = resultlist.get(0);
+		return employee;
 	}
 
-	// 社員ID生成する リレーションのアノテーションを付けたら、エラーで使えなくなりました。
-	// 使いません。
+	/**
+	 * 社員ID生成する.使いません.リレーションのアノテーションを付けたら、エラーで使えなくなりました
+	 * @return generatedEmpId
+	 */
 	public String generateEmpIdFromCriteria() {
-
 		String generatedEmpId = null;
-
 		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-
 		CriteriaQuery<Employee> query = builder.createQuery(Employee.class);
-
 		Root<Employee> root = query.from(Employee.class);
-
 		query.select(root).orderBy(builder.desc(root.get("employeeId")));
-
 		List<Employee> list = (List<Employee>) entityManager.createQuery(query).setFirstResult(0).setMaxResults(1)
 				.getResultList();
 		// 社員IDが 辞書順に並び替えて、最後にあるものを取得した。それがリストに１つ入ってるはず、リストに要素が一つも無かったら、まだ、全く登録されていないので
@@ -162,6 +148,8 @@ public class EmployeeService {  // リレーションの従テーブル
 		return generatedEmpId;
 	}
 
+	
+	
 	// 手動で、社員IDを生成する リレーションをつけると、こっちでしかできない
 	// エンティティのリレーションを付けたので、こっちを使う、上のCriteria APIだとリレーションつけたら、エラーになるようになった。
 	public String generateEmpId() {

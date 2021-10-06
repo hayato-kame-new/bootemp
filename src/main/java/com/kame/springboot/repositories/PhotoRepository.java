@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.kame.springboot.model.Photo;
 
 
-@Repository
+@Repository  // リポジトリもコンポーネントです
 public interface PhotoRepository extends JpaRepository<Photo, Integer> {
 
 }

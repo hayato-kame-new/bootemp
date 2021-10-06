@@ -28,11 +28,11 @@ import com.kame.springboot.model.Employee;
 import com.kame.springboot.service.DepartmentService;
 import com.kame.springboot.service.EmployeeService;
 import com.kame.springboot.service.PhotoService;
-
+// コントローラでは、サービスクラスを利用するので、 サービスのクラスの方に@Transactionalアノテーションをつけて、コントローラにはつけない
 @Controller // コンポーネントです  
-public class EmployeeController { // コントローラでは、サービスクラスを利用する サービスのクラスの方に@Transactionalアノテーションをつける場合もある
+public class EmployeeController { 
 
-	// フィールドには、サービスを置いて サービスの中から、いろんなものを呼び出す。@Autowiredによって自動で、内部クラスのインスタンスが生成されてる
+	// @Autowiredによって自動で、内部クラスのインスタンスが生成されて利用できる
 	@Autowired
 	EmployeeService employeeService;
 

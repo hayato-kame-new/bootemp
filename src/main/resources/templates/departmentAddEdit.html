@@ -28,14 +28,16 @@ div {
 </style>
 </head>
 <body>
-	
+	<a href="/department" th:href="@{/department}">部署一覧ページへ戻る</a><br />
 	<hr/>
 	<h3 th:text="'部署' + (${action == 'depAdd'} ? '新規作成' : '編集') + 'ページ'"></h3>	
 	
 	<p class="msg" th:if="${msg}" th:text="${msg}" ></p>
 	
 	<form method="post" action="/dep_add_edit" th:object="${formModel}">	
-		<input type="hidden" name="departmentId" th:value="*{departmentId}" />
+		
+		<input type="hidden" name="departmentId" th:value="*{departmentId}" /> 
+				
 		<input type="hidden" name="action" th:value="${action}" />
 		<label for="departmentName">部署名: </label>	
 		<input type="text" id="departmentName" name="departmentName" th:value="*{departmentName}" th:errorclass="err" />

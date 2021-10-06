@@ -87,10 +87,14 @@ public class Employee {
 //	ADD FOREIGN KEY (departmentId) 
 //	REFERENCES department (departmentId);	
 	// @Valid   // ネストしたJavaBeansもバリデーションチェック対象となる ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつける 今回はいらない
-	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
-	Department department;  // @ManyToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
+//	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
+//	Department department;  // @ManyToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
 
 	
+
+	// @JoinColumn(name = "departmentid", referencedColumnName = "departmentid", insertable = false, updatable = false)
+//	@ManyToOne(cascade = CascadeType.ALL)
+//	Department department;
 	//リレーション 相互参照なEntityクラス化する  このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。
 	// employeeテーブルのphotoidカラムが(photoテーブルのプライマリーキーphotoidカラム)とリレーション  クラス化した場合に Photoエンティティクラスへの参照になります。
 	// 従テーブルのemployeeテーブルに外部制約つけた 更新と削除に cascadeつけてる
@@ -101,8 +105,17 @@ public class Employee {
 //	on delete cascade
 //	on update cascade;
 	// @Valid   // ネストしたJavaBeansもチェック対象となる 今回はいらない
-	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE})  // テーブル構造に合わせて同じcascadeをつける サービスクラスのメソッドでエラー発生するので、コントローラでキャッチして処理する
 	Photo photo;  // @OneToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
+	
+	
+
+//	カスケード削除する場合、親を削除することで関連する子も同時に削除されます テテなし子にならないために
+	
+	@ManyToOne
+	Department department;
+
+	
 	
 	/**
 	 * 引数なしのコンストラクタ.
@@ -140,8 +153,8 @@ public class Employee {
 		this.departmentId = departmentId;
 		this.hireDate = hireDate;
 		this.retirementDate = retirementDate;
-//		this.department = department; 
-//		this.photo = photo;
+//		this.department = department; // いらない
+//		this.photo = photo;  // いらない
 	}
 	
 	/**

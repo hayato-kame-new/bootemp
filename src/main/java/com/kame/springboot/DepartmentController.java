@@ -42,15 +42,8 @@ public class DepartmentController {
 		mav.setViewName("department");
 		mav.addObject("title", "index");
 		mav.addObject("msg", "部署データ一覧です");
-		
-		// DAOからじゃなくて、サービスから呼び出す		
-	// 	List<Department> departmentList = departmentService.findAllDepartmentData();
-		
-		// 上のだと、並び順が、部署名の更新をすると、変わってしまうため、下のものを使う 
-		// PostgreSQL だと、order by departmentId を付けないと、順番が、更新されたのが一番最後の順になってします。
-		// ちなみに、PostgreSQLだと、departmentid と内部では小文字になるようにしないとエラー  @Column(name = "departmentid", length = 20)で カラム名を小文字にしてるので大丈夫です
+		// リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出す
 		String flashMsg = "";
-		// リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値をString flashMsg = "";
 		// Flash Scopeから取り出すには、Modelインスタンスの getAttributeメソッドを使う
 		if (model.getAttribute("flashMsg") != null){
 			flashMsg = (String) model.getAttribute("flashMsg");// 返り値がObject型なので、キャストすること
@@ -60,10 +53,9 @@ public class DepartmentController {
 		mav.addObject("departmentList", departmentList);
 		return mav;
 	}
-	
-	
+		
 	/**
-	 * 画面を表示する リクエストハンドラ
+	 * フォームの画面を表示する
 	 * @param action
 	 * @param departmentId
 	 * @param departmentName
@@ -79,22 +71,14 @@ public class DepartmentController {
 			@ModelAttribute("formModel") Department department,
 			ModelAndView mav) {
 		
-		if(action.equals("depAdd")) {			
-			// "formModel"という変数を用意して、空のインスタンスの入ったdepartmentインスタンスを送る。
-			// ただし、各フィールドには、各データ型の規定値が入ってます。
-			// 新規では、action だけが、GETだから、クエリー文字列で送られてきている。actionも、次へ送る
-		} else if (action.equals("depEdit")) {
-			// 編集のときには、"formModel"という変数には、フォームからのデータが入っているが、hiddenで送られているので、departmentの各フィールドは、最初に新規で送られたもの同じです
-			// 規定値になってるので、hiddenタグから送られたパラメータの値をセットします。	
-				
-			// この２行でもOK。employeeみたいなメソッドを作って、エンティティを検索してきて、それをaddObject("formModel", インスタンスの入った変数)としてもいい
+		if(action.equals("depAdd")) { // 新規のとき
+			// "formModel"という変数を用意して、空のインスタンス(各フィールドには、各データ型の規定値が入ってる)のdepartmentインスタンスを送る。
+		} else if (action.equals("depEdit")) { // 編集のとき
 			// department.setDepartmentId(departmentId); // これでもいい
-			// department.setDepartmentName(departmentName); // これでもいい
-			
-			Department findDepartment = departmentService.getByDepartmentId(departmentId);
-			mav.addObject("formModel", findDepartment );  // この１行必要
-		}
-		
+			// department.setDepartmentName(departmentName); // これでもいい			
+			department = departmentService.getByDepartmentId(departmentId);
+			mav.addObject("formModel", department );  // この１行必要
+		}		
 		mav.setViewName("departmentAddEdit");
 		mav.addObject("action", action);
 		mav.addObject("title", action);
@@ -118,50 +102,52 @@ public class DepartmentController {
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.POST)
 	public ModelAndView depAddUpdate(  //   このリクエストハンドラには、@Transactional つけないこと このリクエストハンドラ内で、エラーをキャッチして処理したいから @Transactionalは、サービスクラスのメソッドについています。
 			@RequestParam(name = "action") String action,  // 必須パラメータにしてる
-			@RequestParam(name = "departmentId", required = false)String departmentId,  // departmentIdは、hiddenフィールド 新規の時は、nullなのでエラーにならないように 任意パラメータにする
-			@RequestParam(name = "departmentName", required = false )String departmentName, // 必須パラメータにしてる required = false は、必要です。削除するときに、nullになるから、エラーにならないように 任意パラメータにする
+			//@RequestParam(name = "departmentId", required = false)String departmentId,  // departmentIdは、hiddenフィールド 新規の時は、nullなのでエラーにならないように 任意パラメータにする
+			//@RequestParam(name = "departmentName", required = false )String departmentName, // 必須パラメータにしてる required = false は、必要です。削除するときに、nullになるから、エラーにならないように 任意パラメータにする
 			@ModelAttribute("formModel")@Validated Department department,
 			BindingResult result,
+			RedirectAttributes redirectAttributes,
 			ModelAndView mav) {
-		
-		
+				
 		ModelAndView resMav = null;
 		
 		if (!result.hasErrors()) {
 			// バリデーションエラーが発生しなかったので、処理に進む
+
+			// データベースの成功したかどうか
+			boolean success = true;
+			// Flash scopeへ保存して リダイレクトする
+			String flashMsg = "新規部署を作成しました";
 			switch(action) {
 			case "depAdd": 				
-				// 新規では、部署名は、フォームから取得するが、部署IDは hiddenタグから送られてきて null が入ってる
-				// 文字列の部署IDは、自分で作成する必要がある。
+				// 文字列の部署IDは、自分で作成する
 				String resultGeneratedId = departmentService.generatedId();
-				// null　から上書きする
+				// nullから上書きする
 				department.setDepartmentId(resultGeneratedId);
-				// データベースに新規保存する。サービスのメソッドを呼び出す
-                // departmentNameカラム  にユニーク制約がかかっているので、
-				// すでにある部署名を登録しようとすると、ユニーク制約に引っ掛かる、
-				// ここのsaveAndFlushDepartmentData から更に呼び出される saveAndFlushで、duplicate key value violates unique constraint "constraint_name"
-				//   詳細: Key (departmentname)=(開発部) already exists. と、エラーが出るため、例外をキャッチする必要がある org.springframework.dao.DataIntegrityViolationException
-				// ユニークの自作のバリデーションを使わないで、例外処理をして対処する
+
 				try {
-					Department savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
-				} catch (DataIntegrityViolationException e) {
-					// 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
+					// savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
+					success = departmentService.create(department);
+				} catch (DataIntegrityViolationException | ConstraintViolationException | PersistenceException e) {
+					// 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処InvocationTargetExceptionする。
 					mav.setViewName("departmentAddEdit");
 					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
 					mav.addObject("formModel", department);
 					mav.addObject("action", action);
 					resMav = mav;
 					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
-				}
-					
-				// ここに来たら、無事新規保存できてる
-				
+				} 
+				if(success == false) {  // 失敗
+					flashMsg = "新規部署は作成できませんでした";
+				}				
 				break; // switch文を抜ける			
 			case "depEdit": // 編集の時には、必ずdepartmentIdの値が入ってるnullじゃない
-				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す 
+				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す
+				
 				try {
-					Department savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
-				} catch (DataIntegrityViolationException e) {  // 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
+					//  savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
+					success = departmentService.update(department);
+				} catch (DataIntegrityViolationException | ConstraintViolationException | PersistenceException e) {  // 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
 					// キャッチ
 					mav.setViewName("departmentAddEdit");
 					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
@@ -170,9 +156,13 @@ public class DepartmentController {
 					resMav = mav;
 					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
 				}
-				// ここに来たら、成功してる
+				if(success == false) {  // 失敗
+					flashMsg = "部署を更新できませんでした";
+				}		
 				break; // switch文を抜ける
 			}
+			//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
+			redirectAttributes.addFlashAttribute("flashMsg", flashMsg);
 			// 部署一覧へリダイレクトする リダイレクトは、リダイレクト先のリクエストハンドラを実行します
 			resMav =  new ModelAndView("redirect:/department");
 		} else { // バリデーションエラーが発生した時
