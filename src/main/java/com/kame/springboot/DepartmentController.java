@@ -24,13 +24,12 @@ import com.kame.springboot.service.DepartmentService;
 @Controller
 public class DepartmentController {
 	
-	// フィールドとして組み込む @Autowired でインスタンスを生成してくれる（コンストラクタを呼んでnewすることを自動で行う)
-	// このサービスのフィールドに、DepartmentRepositoryインスタンスBeanが組み込まれてるので、このコントローラに、わざわざリポジトリのフィールドはいらない
+	// フィールド  @Autowiredをつけると自動でインスタンスを生成してくれる
 	@Autowired
-	DepartmentService departmentService;  // DAOのインスタンスを使わずに、サービスのインスタンスをBeanにして使う
+	DepartmentService departmentService;
 	
 	/**
-	 * 部署一覧表示する
+	 * 部署一覧を表示する.
 	 * @param model
 	 * @param mav
 	 * @return mav
@@ -55,10 +54,8 @@ public class DepartmentController {
 	}
 		
 	/**
-	 * フォームの画面を表示する
+	 * フォームの画面を表示する.
 	 * @param action
-	 * @param departmentId
-	 * @param departmentName
 	 * @param department
 	 * @param mav
 	 * @return mav
@@ -66,52 +63,36 @@ public class DepartmentController {
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.GET)
 	public ModelAndView depDisplay(
 			@RequestParam(name = "action") String action, // 必須パラメータ(デフォルト)にしてる 渡ってこないとエラーになる リダイレクトしてくる時にも "action" は送られてくる必須
-			@RequestParam(name = "departmentId", required = false) String departmentId, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
-			@RequestParam(name = "departmentName", required = false) String departmentName, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
 			@ModelAttribute("formModel") Department department,
 			ModelAndView mav) {
 		
-		if(action.equals("depAdd")) { // 新規のとき
-			// "formModel"という変数を用意して、空のインスタンス(各フィールドには、各データ型の規定値が入ってる)のdepartmentインスタンスを送る。
-		} else if (action.equals("depEdit")) { // 編集のとき
-			
-			
-			
-			//  ここおかしくないか？？　そもそもdepartmentにはセットされてるからさ・・・
-			// @RequestParam(name = "departmentId", いらない？？
-			// @RequestParam(name = "departmentName", いらない？？
-			// department.setDepartmentId(departmentId); // これでもいい
-			// department.setDepartmentName(departmentName); // これでもいい
-			
-			
-			department = departmentService.getByDepartmentId(departmentId);
-			mav.addObject("formModel", department );  // この１行必要
+		if(action.equals("depAdd")) { 
+			// 新規の時には、@ModelAttributeによってdepartmentが用意されるが、 空のインスタンス(各フィールドには、各データ型の規定値が入ってる)
+		} else if (action.equals("depEdit")) { // 編集
+			// 編集の時には、@ModelAttributeによってdepartmentには、フォームから送られた値がセットしてある
 		}		
 		mav.setViewName("departmentAddEdit");
+		mav.addObject("formModel", department );
 		mav.addObject("action", action);
 		mav.addObject("title", action);
 		return mav;
 	}
 	
-	
 	/**
-	 * 登録や編集をする @Validated が必要
-	 * import org.springframework.transaction.annotation.Propagation;
-	 * ここには @Transactional つけないこと @Transactional をつけないこと サービスクラスで @Transactionalをつけるから、つけたら、ネストされた状態になるので
-	 * このリクエストハンドラ内でtry〜catchでエラーを処理するので。
+	 * 部署を新規登録や編集をする. @Validated が必要.
+	 * このリクエストハンドラ及びこのコントローラに @Transactional つけないこと. 
+	 * @Transactional をつけないこと 理由 サービスクラスで @Transactionalをつけるから、つけたら、ネストされた状態になるのでエラー発生する.
+	 * このリクエストハンドラ内でtry〜catchでエラーを処理するので.
 	 * @param action
-	 * @param departmentId
-	 * @param departmentName
 	 * @param department
 	 * @param result
+	 * @param redirectAttributes
 	 * @param mav
 	 * @return mav
 	 */
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.POST)
-	public ModelAndView depAddUpdate(  //   このリクエストハンドラには、@Transactional つけないこと このリクエストハンドラ内で、エラーをキャッチして処理したいから @Transactionalは、サービスクラスのメソッドについています。
+	public ModelAndView depAddUpdate(  //   このリクエストハンドラ及びコントローラには、@Transactional つけないこと このリクエストハンドラ内で、エラーをキャッチして処理したいから @Transactionalは、サービスクラスのメソッドについています.
 			@RequestParam(name = "action") String action,  // 必須パラメータにしてる
-			//@RequestParam(name = "departmentId", required = false)String departmentId,  // departmentIdは、hiddenフィールド 新規の時は、nullなのでエラーにならないように 任意パラメータにする
-			//@RequestParam(name = "departmentName", required = false )String departmentName, // 必須パラメータにしてる required = false は、必要です。削除するときに、nullになるから、エラーにならないように 任意パラメータにする
 			@ModelAttribute("formModel")@Validated Department department,
 			BindingResult result,
 			RedirectAttributes redirectAttributes,
@@ -124,26 +105,27 @@ public class DepartmentController {
 
 			// データベースの成功したかどうか
 			boolean success = true;
-			// Flash scopeへ保存して リダイレクトする
-			String flashMsg = "新規部署を作成しました";
+			// Flash scopeへ保存して リダイレクトする Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
+			String flashMsg = "部署を新規登録作成しました";
+			
 			switch(action) {
 			case "depAdd": 				
-				// 文字列の部署IDは、自分で作成する
+				// 新規登録をするために、 プライマリーキーで文字列の部署IDは、自分で作成する
 				String resultGeneratedId = departmentService.generatedId();
-				// nullから上書きする
+				// 新規登録のときは @ModelAttributeによって規定値(各フィールドのデータ型のデフォルト値)が入ってるdepartmentインスタンスが用意されているので 
+				// セッターを使って、null(参照型のデフォルト値)を departmentIdフィールドの値を 上書きします
 				department.setDepartmentId(resultGeneratedId);
 
 				try {
-					// savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
 					success = departmentService.create(department);
 				} catch (DataIntegrityViolationException | ConstraintViolationException | PersistenceException e) {
-					// 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処InvocationTargetExceptionする。
+					// 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理する
 					mav.setViewName("departmentAddEdit");
 					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
 					mav.addObject("formModel", department);
 					mav.addObject("action", action);
 					resMav = mav;
-					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
+					return resMav;	// ここですぐにreturn	以降の行は実行されない		
 				} 
 				if(success == false) {  // 失敗
 					flashMsg = "新規部署は作成できませんでした";
@@ -151,6 +133,8 @@ public class DepartmentController {
 				break; // switch文を抜ける			
 			case "depEdit": // 編集の時には、必ずdepartmentIdの値が入ってるnullじゃない
 				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す
+				
+				
 				
 				try {
 					//  savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
@@ -216,11 +200,15 @@ public class DepartmentController {
 		String flashMsg = "部署を削除しました";
 		boolean result = true;
 		try {
-			result = departmentService.delete(departmentId); // PersistenceException発生する可能性あるメソッドです　　メソッドでthrows宣言してます
+			result = departmentService.delete(departmentId); // PersistenceException発生する可能性あるメソッドです メソッドでthrows宣言してます
+			if(result == false) {
+				flashMsg = "部署を削除できませんでした";
+			}
 		} catch (PersistenceException | ConstraintViolationException e) { // 問題が発生したときに永続化プロバイダーによってスローされます
 			flashMsg = "削除しようとした部署には、所属している社員がいるので、削除できませんでした。";
 			result = false;
 		}
+		
 		// Flash Scopeに保存して、リダイレクトする
 	//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
 		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);

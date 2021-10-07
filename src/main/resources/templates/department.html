@@ -35,14 +35,14 @@ div {
 	<p th:if="${flashMsg != null}" th:text="${flashMsg}" class="flashMsg">
 	<table>
 		<tr><th>部署ID</th><th>部署名</th><th></th><th></th></tr>
-		<tr th:each="department : ${departmentList}" th:object="${department}">
-			<td th:text="*{departmentId}"></td>
-			<td th:text="*{departmentName}"></td>
+		<tr th:each="department : ${departmentList}" >
+			<td th:text="${department.departmentId}"></td>
+			<td th:text="${department.departmentName}"></td>
 			<td >
-				 <form method="get" action="/dep_add_edit" >
+				 <form method="get" action="/dep_add_edit" th:object="${formModel}">
 					<!-- フォームでGETアクセスだと、hiddenタグで送ったものは、URL末尾の?以降のクエリー文字列で送られます。method="get"を省略しても大丈夫、デフォルトでGET -->
-					<input type="hidden" name="departmentId" th:value="*{departmentId}" />
-					<input type="hidden" name="departmentName" th:value="*{departmentName}" />
+					<input type="hidden" name="departmentId" th:value="${department.departmentId}" />
+					<input type="hidden" name="departmentName" th:value="${department.departmentName}" /> 
 					<input type="hidden" name="action" value="depEdit" />
 					<input type="submit" value="編集" /> 
 	 			</form>
@@ -51,7 +51,7 @@ div {
 				<!-- 削除には、プライマリーキーの値だけ必要です あと actionも送る -->
 				<form method="post" action="/dep_delete">
 					<!-- POSTで送る。POSTだと、リクエストボディにデータが入って送られる。フォームでは、method="post"を書かないと、デフォルトのGETになってしまう -->
-					<input type="hidden" name="departmentId" th:value="*{departmentId}" />
+					<input type="hidden" name="departmentId" th:value="${department.departmentId}" />
 					<input type="hidden" name="action" th:value="delete" />
 					<input type="submit" value="削除" />
 				</form>
