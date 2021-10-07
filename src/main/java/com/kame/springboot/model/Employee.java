@@ -22,10 +22,6 @@ import org.springframework.lang.Nullable;
 
 import com.kame.springboot.annotation.DayCheck;  
 
-// Departmentエンティティ  Photoエンティティの従エンティティ(子エンティティ)
-//@SessionScope はSpring4.3から使用できるようになり、元は
-// @Scope(value = “session”, proxyMode = ScopedProxyMode.TARGET_CLASS) 自身より狭いスコープのものも DI コンテナから受け取る実装になっていても問題ない作りになっている。
-
 @Entity
 @Table(name = "employee")
 @DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")
@@ -68,7 +64,7 @@ public class Employee {
 	@Column(name = "departmentid") // 全て小文字のカラム名 @NotEmpty つけない 新規の時にはnullが送られるので
 	private String departmentId; // リレーションのあるカラム
 	
-	// メッセージプロパティに、  typeMismatch.java.util.Date=yyyy/MM/dd形式で入力してください     を追加する これで TypeMismatchException発生した時に、出る長いエラーメッセージを、上書きして変更できる
+	// メッセージプロパティに追加する  typeMismatch.java.util.Date=yyyy/MM/dd形式で入力してください     これで TypeMismatchException発生した時に、出る長いエラーメッセージを、上書きして変更できる
 	@DateTimeFormat(iso = ISO.DATE, fallbackPatterns = { "yyyy/MM/dd", "yyyy-MM-dd" })  //iso = ISO.DATE だと 最も一般的な ISO 日付形式 yyyy-MM-dd  たとえば、"2000-10-31"   fallbackPatterns に設定したものは、エラーにしないで、受け取ってくれる
 	@Column(name = "hiredate") // 全て小文字のカラム名
 	@NotNull(message="入社日を入力してください")  // 日付には、@NotNullを使う
@@ -79,43 +75,11 @@ public class Employee {
 	@Nullable  // org.springframework.langパッケージのアノテーション これよりも先に、相関関係のバリデーションの方が行われるらしい
 	private Date retirementDate;  // java.util.Date 
 
-	//  リレーション 相互参照なEntityクラス化する このEmployeeエンティティは、Departmentエンティティに対して、従エンティティです。
-	// employeeテーブルのdepartmentidカラムが(departmentテーブルのプライマリーキーdepartmentidカラム)   クラス化した場合に Departmentエンティティクラスへの参照になります。
-	// 従テーブルのemployeeテーブルに外部制約つけた  必要なら、こっちの従テーブル側にcascadeを書きますが、  cascade必要なければ付けない 
-	// 今回は、子テーブルのemployeeのデータを全て消しても、Departmentは残したいので、子テーブル側にはcascadeはつけません
-//	ALTER TABLE employee
-//	ADD FOREIGN KEY (departmentId) 
-//	REFERENCES department (departmentId);	
-	// @Valid   // ネストしたJavaBeansもバリデーションチェック対象となる ネストしたJavaBeansにも、バリデーションエラー出す時には、コントローラで@Validをつける 今回はいらない
-//	@ManyToOne  // employeeを全て消しても、Departmentは残したいので、cascadeはつけません
-//	Department department;  // @ManyToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
-
-	
-
-	// @JoinColumn(name = "departmentid", referencedColumnName = "departmentid", insertable = false, updatable = false)
-//	@ManyToOne(cascade = CascadeType.ALL)
-//	Department department;
-	//リレーション 相互参照なEntityクラス化する  このEmployeeエンティティは、Photoエンティティに対して、従エンティティです。
-	// employeeテーブルのphotoidカラムが(photoテーブルのプライマリーキーphotoidカラム)とリレーション  クラス化した場合に Photoエンティティクラスへの参照になります。
-	// 従テーブルのemployeeテーブルに外部制約つけた 更新と削除に cascadeつけてる
-//
-//	ALTER TABLE employee
-//	ADD FOREIGN KEY (photoId) 
-//	REFERENCES photo (photoId)
-//	on delete cascade
-//	on update cascade;
-	// @Valid   // ネストしたJavaBeansもチェック対象となる 今回はいらない
-	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE})  // テーブル構造に合わせて同じcascadeをつける サービスクラスのメソッドでエラー発生するので、コントローラでキャッチして処理する
-	Photo photo;  // @OneToOne  だから、フィールド名は、単数形に。アクセッサの ゲッター セッターも追加する
-	
-	
-
-//	カスケード削除する場合、親を削除することで関連する子も同時に削除されます テテなし子にならないために
-	
+	@OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE}) 
+	Photo photo;  // @OneToOne  だからフィールド名は単数形に。アクセッサの ゲッター セッターも追加する
+		
 	@ManyToOne
 	Department department;
-
-	
 	
 	/**
 	 * 引数なしのコンストラクタ.

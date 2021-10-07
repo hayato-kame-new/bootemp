@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -26,17 +25,9 @@ public class Photo {
 	@Column(name = "mime")  // 全て小文字
 	private String mime;  // contentTypeのこと "image/jpeg"  "image/png"などMIMEタイプ "タイプ/サブタイプ" nullでも構わない
 	
-	// Photo側が、親エンティティ Photo側は 社員を持っています。1対1のリレーション
-	// 必要なら、cascadeを子テーブルemployee側に書くcascade = {CascadeType.MERGE, CascadeType.REMOVE}を子テーブルにつけてる 
-	// @JoinColumn(name = "photoid")  をつけることによって参照管理テーブル(3つめの中間テーブル）が作られなくなります
-	// 参照管理テーブルがない場合、employeeの中身は従業員テーブルから自動的に作られます。	
 	 @OneToOne
-	 @JoinColumn(name = "photoid")  // 参照管理テーブル(3つめの中間テーブル）が作られなくなります
 	 Employee employee;  // OneToOne  なので、フィールド名は単数形に
 	
-	 
-	 //  @JoinColumnいらない？？？
-	 
 	/**
 	 * 引数なしのコンストラクタ
 	 */

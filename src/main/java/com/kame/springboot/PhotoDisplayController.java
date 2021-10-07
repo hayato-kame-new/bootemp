@@ -21,13 +21,15 @@ public class PhotoDisplayController {
 	
 	// nullの場合もあるので　required = false　をつけて、nullも受けつけるようにしておく
 	@RequestMapping(value = "/getImg", method = RequestMethod.GET)
-	public void getImg(@RequestParam(name = "photoId", required = false)int photoId, HttpServletResponse response) {
-		// 新規作成の時には、 photoIdは、int型のデータ型の規定値で 0 が入ってきています。
-		//HttpServletResponse response　を使って、戻り値を voidにすれば、直接レスポンスを書き込むことができる。
-		// photoid は、imgタグのリンクのURLの末尾にクエリー文字列として、送ってきてます URLにクエリーパラメータを指定することで、
-		// コントローラメソッドで、@RequestParam 指定された値を取得することができます。
-		// 社員新規作成の時、photoId が 0 だと、 javax.persistence.NoResultException 発生するので、
-		// photoId が 0 の時には、getPhotoDataメソッドを呼び出さない
+	public void getImg(
+			@RequestParam(name = "photoId")int photoId,
+			HttpServletResponse response) {
+		// 新規作成の時には、 photoIdは、int型のデータ型の規定値で 0 が入ってきています.
+		// HttpServletResponse response を使って、戻り値を voidにすれば、直接レスポンスを書き込むことができる.
+		// photoid は、imgタグのリンクのURLの末尾にクエリー文字列として、送ってきてます. 
+		// クエリー文字列で送られたものは リクエストハンドラで@RequestParamを使って取得することができます.
+		// 社員新規作成の時、photoId が 0 なので javax.persistence.NoResultException 発生します.
+		// photoId が 0 の時には、getPhotoDataメソッドを呼び出さないこと.
 		if (photoId != 0) { // 編集の時だけ、
 			byte[] photoData = photoService.getPhotoData(photoId); 
 			String mime = photoService.getMime(photoId); // コンテンツタイプの取得  "image/jpeg"  "image/png" など "タイプ/サブタイプ" という形

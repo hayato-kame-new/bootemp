@@ -205,23 +205,26 @@ public class EmployeeController {
 
 			switch (action) {
 			case "add":
-				// 新規では、ファイルのアップロードをしてくる必須にする
-				success = photoService.photoDataAdd(photoData, mime); // photoテーブルを新規に登録する 成功すればtrue 失敗するとfalse が返る
+				// 新規では、ファイルのアップロードをしてくる必須にしてる
+				// photoテーブルを新規に登録する主キーのカラムのphotoid は自動採番する  成功すればtrue 失敗するとfalse が返る
+				success = photoService.photoDataAdd(photoData, mime);
 				if (!success) { // falseが返ったら、失敗
 					msg = "写真データの新規登録に失敗しました。"; // 結果ページへの出力のため
 					title = "失敗"; // 結果ページへの出力のため
 					break; // case句を抜ける
-				} else { // tureが返ったら、成功
-					// 一番最後のphotoIdを取得して、それをemployeeインスタンスののphotoIdの値に更新する
-					int lastPhotoId = photoService.getLastPhotoId(); // 戻り値データベースに登録されてる一番最後のphotoId(int型)が返る
-																		// まだ、一つも作られていない場合 1 が返る
+				} else { // tureが返ったら、成功   次はemployeeテーブルに新規作成をする
+					// さっきphotoテーブルに登録した一番最後のphotoIdを取得して、 それをemployeeインスタンスのphotoIdの値に更新する
+					int lastPhotoId = photoService.getLastPhotoId(); // 戻り値  データベースに登録されてる一番最後のphotoId(int型)が返る
 					// まず、新規登録用に、社員IDを生成します。
 					String generatedEmpId = employeeService.generateEmpId(); // 社員IDを生成
+					// employee は、フォームからの値がセットされてるので、そのemployeeを更新する
+					// セッターを使い、フィールドに代入する(規定値から上書きする)
 					employee.setEmployeeId(generatedEmpId); // フォームから送られてきた時点ではemployeeIdの値は 規定値(String型の初期値)の null
 															// になってるので、生成したIDで上書きする
-
+					// セッターを使い、フィールドに代入する(規定値から上書きする)
 					employee.setPhotoId(lastPhotoId); // フォームから送られてきた時点ではphotoIdの値は 規定値(int型の初期値)の 0
-														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを取得してきたので、それで上書きする
+														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを  photoService.getLastPhotoId() によって取得してきたので、それで上書きする
+					// 更新したemployeeを employeeテーブルに新規登録する
 					success = employeeService.empAdd(employee);
 					if (!success) { // 失敗
 						msg = "社員データの新規登録に失敗しました。"; // 結果ページへの出力のため

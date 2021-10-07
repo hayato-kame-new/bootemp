@@ -24,12 +24,13 @@ div {
 	margin-bottom: 15px;
 }
 .err { color: red; }
+.msg { color: lightsteelblue; }
 </style>
 </head>
 <body>
 結果ページです
 
-<p th:text="${msg}"></p>
+<p class="msg" th:text="${msg}"></p>
 
 <th:block th:if="${#strings.equals(action, 'depAdd')  || #strings.equals(action, 'depEdit')}">
 	<a th:href="@{/department}" >部署一覧ページへ戻る</a>	

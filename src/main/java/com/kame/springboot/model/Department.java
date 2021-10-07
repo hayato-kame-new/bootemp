@@ -25,31 +25,8 @@ public class Department {
 	@Column(name = "departmentname", length = 20, nullable = false, unique = true) // カラム名は、postgreSQL の全て小文字に合わせる unique = true をつけて、テーブル定義でも、最初にUNIQUEをつけておくこと
 	private String departmentName;
 	
-	// リレーション 相互参照なEntityクラス化する   部署側(親)が社員クラスのリストを持っています
-	// @JoinColumn(name = "departmentid") をつければ、中間テーブルは作られなくなる。
-	// 参照管理テーブル(中間テーブル)がない場合、employeesの中身は従業員テーブルから自動的に作られます。
-	// こっちは、親テーブル側です。必要なら、子テーブル側にcascadeを書きますが、  cascade必要なければ付けない 今回は、子テーブルのemployeeのデータを全て消しても、Departmentは残したいので、削除については子テーブル側にはcascadeはつけません
-//	@JoinColumn(name = "departmentid")  //中間テーブルを作らないようにするためのもの@JoinColumn
-//	@OneToMany  
-//	List<Employee> employees;  // OneToMany だと、フィールド名を複数形にする アクセッサの ゲッター セッターも追加する
-	
-	
-	
-	// @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "headerEntity")
 	@OneToMany(mappedBy = "departmentId", cascade = CascadeType.ALL)
 	List<Employee> employees;
-	
-//	 public void addEmployee(Employee employee) {
-//		 employees.add(employee);
-//		 employee.setDepartment(this);
-//	    }
-//	    public void removeEmployee(Employee employee) {
-//	    	employees.remove(employee);
-//	    	employee.setDepartment(null);
-//	    }
-
-	    
-	    
 	
 	// 引数なしコンストラクタ
 	public Department() {

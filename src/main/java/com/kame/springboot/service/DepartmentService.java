@@ -85,30 +85,22 @@ public class DepartmentService { // departmentテーブルは、リレーショ�
 	}
 
 	/**
-	 * 部署を保存更新する. departmentnameカラムがユニークなので同じ名前を登録しようとすると例外が発生する.このメソッドでは発生した例外を呼び出し元へ投げる.
+	 * 部署新規作成.departmentnameカラムがユニークなので同じ名前を登録しようとすると例外が発生する.このメソッドでは発生した例外を呼び出し元へ投げる.
 	 * ロールバックの注意点として、非検査例外(RuntimeException及びそのサブクラス)が発生した場合はロールバックされるが、検査例外(Exception及びそのサブクラスでRuntimeExceptionのサブクラスじゃないもの)が発生した場合はロールバックされずコミットされる
 	 * RuntimeException以外の例外が発生した場合もロールバックしたいので @Transactional(rollbackFor =
 	 * Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します.
 	 * rollbackFor=Exception.class  全ての例外が発生した場合、ロールバックさせる.  
 	 * 呼び出し元つまりコントローラ のメソッドでtry-catchする ここで例外処理をしてはいけない コントローラのメソッドで例外処理をするために、コントローラ及びコントローラのリクエストハンドラには @Transactional
 	 * をつけないこと.
-	 *  throws宣言が必要 呼び出しもとへ投げる throws DataIntegrityViolationException必要. 
+	 * throws宣言が必要 呼び出しもとへ投げる throws DataIntegrityViolationException必要. 
 	 * @Transactional(readOnly=false, rollbackFor=Exception.class) をつけること. 
 	 * 
-	 * 
-	 *                               
 	 * @param department
-	 * @return
+	 * @return true 成功<br>false 失敗
 	 * @throws DataIntegrityViolationException
+	 * @throws ConstraintViolationException
+	 * @throws PersistenceException
 	 */
-//	@Transactional(readOnly = false, rollbackFor = Exception.class) // サービスクラスのメソッドにつける コントローラにはつけないこと @Transactionalネストしないこと
-//	public Department saveAndFlushDepartmentData(Department department) throws DataIntegrityViolationException { // throws宣言が必要
-//		Department savedDepartment = departmentRepository.saveAndFlush(department); // DataIntegrityViolationExceptionが発生する可能性がある 
-//		// saveAndFlushは、DataIntegrityViolationException例外を発生させる可能性があるので、ここでは、キャッチしないで、例外を呼び出しもとへ、スロー投げます。
-//		return savedDepartment; // エラーなければ、保存したエンティティオブジェクトを返す
-//	}
-	
-	// 使う
 	@Transactional(readOnly = false, rollbackFor = Exception.class)
 	public boolean create(Department department) throws DataIntegrityViolationException , ConstraintViolationException, PersistenceException{
 		Query query = entityManager.createNativeQuery("insert into department (departmentid, departmentname) values (?,?)");
@@ -121,7 +113,23 @@ public class DepartmentService { // departmentテーブルは、リレーショ�
 		return true;		
 	}
 	
-	// 使う
+	/**
+	 * 部署更新.departmentnameカラムがユニークなので同じ名前を登録しようとすると例外が発生する.このメソッドでは発生した例外を呼び出し元へ投げる.
+	 * ロールバックの注意点として、非検査例外(RuntimeException及びそのサブクラス)が発生した場合はロールバックされるが、検査例外(Exception及びそのサブクラスでRuntimeExceptionのサブクラスじゃないもの)が発生した場合はロールバックされずコミットされる
+	 * RuntimeException以外の例外が発生した場合もロールバックしたいので @Transactional(rollbackFor =
+	 * Exception.class)としてExceptionおよびExceptionを継承しているクラスがthrowされるとロールバックされるように設定します.
+	 * rollbackFor=Exception.class  全ての例外が発生した場合、ロールバックさせる.  
+	 * 呼び出し元つまりコントローラ のメソッドでtry-catchする ここで例外処理をしてはいけない コントローラのメソッドで例外処理をするために、コントローラ及びコントローラのリクエストハンドラには @Transactional
+	 * をつけないこと.
+	 * throws宣言が必要 呼び出しもとへ投げる throws DataIntegrityViolationException必要. 
+	 * @Transactional(readOnly=false, rollbackFor=Exception.class) をつけること. 
+	 * 
+	 * @param department
+	 * @return true 成功<br>false 失敗
+	 * @throws DataIntegrityViolationException
+	 * @throws ConstraintViolationException
+	 * @throws PersistenceException
+	 */
 	@Transactional(readOnly = false, rollbackFor = Exception.class)
 	public boolean update(Department department) throws DataIntegrityViolationException , ConstraintViolationException,PersistenceException{
 		Query query = entityManager.createNativeQuery("update department set departmentname = ? where departmentid = ? ");
@@ -173,8 +181,8 @@ public class DepartmentService { // departmentテーブルは、リレーショ�
 	 *                                PersistenceException が必要
 	 * 
 	 * @param departmentId
-	 * @return
-	 * @throws
+	 * @return true 成功<br>false 失敗
+	 * @throws PersistenceException
 	 */
 	@Transactional(readOnly = false, rollbackFor = Exception.class) // ここに@Transactionalをつけて、コントローラにはつけないでください
 	public boolean delete(String departmentId) throws PersistenceException { // throwsして、呼び出しもとで
@@ -207,8 +215,8 @@ public class DepartmentService { // departmentテーブルは、リレーショ�
 	 * @return list
 	 */
 	public List<Department> findByDepName(String departmentName) {
-		Query query = entityManager.createNativeQuery("select * from department where departmentname = ?");																										
-		query.setParameter(1, departmentName);
+		Query query = entityManager.createNativeQuery("select * from department where departmentname = ?");  // "select * from department where departmentname = :a"
+		query.setParameter(1, departmentName);  // query.setParameter("a", departmentName);
 		@SuppressWarnings("unchecked")
 		List<Department> list = (List<Department>) query.getResultList(); // SELECTクエリーを実行し、問合せ結果を型のないリストとして返します キャスト必要
 		return list; // もし、存在してないなら、空のリストを返します。

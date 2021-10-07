@@ -10,9 +10,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,48 +120,46 @@ public class EmployeeService {  // リレーションの従テーブル
 		return employee;
 	}
 
+//	public String generateEmpIdFromCriteria() {
+//		String generatedEmpId = null;
+//		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//		CriteriaQuery<Employee> query = builder.createQuery(Employee.class);
+//		Root<Employee> root = query.from(Employee.class);
+//		query.select(root).orderBy(builder.desc(root.get("employeeId")));
+//		List<Employee> list = (List<Employee>) entityManager.createQuery(query).setFirstResult(0).setMaxResults(1)
+//				.getResultList();
+//		// 社員IDが 辞書順に並び替えて、最後にあるものを取得した。それがリストに１つ入ってるはず、リストに要素が一つも無かったら、まだ、全く登録されていないので
+//		if (list.size() == 0) {
+//			generatedEmpId = "EMP0001"; // 一番最初になります。まだ、ひとつも、employeeデータが登録されてなかったら
+//		} else {
+//			Employee employee = list.get(0);
+//			String getLastId = employee.getEmployeeId(); // 最後に登録されているId
+//			// 文字列切り取りして、数値に変換して、 +1 する それをまた、文字列にフォーマットで変換する
+//			generatedEmpId = String.format("EMP%04d", Integer.parseInt(getLastId.substring(3)) + 1);
+//		}
+//		return generatedEmpId;
+//	}
+		
 	/**
-	 * 社員ID生成する.使いません.リレーションのアノテーションを付けたら、エラーで使えなくなりました
-	 * @return generatedEmpId
+	 * 社員IDを生成する
+	 * @return getGeneratedEmpId
 	 */
-	public String generateEmpIdFromCriteria() {
-		String generatedEmpId = null;
-		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-		CriteriaQuery<Employee> query = builder.createQuery(Employee.class);
-		Root<Employee> root = query.from(Employee.class);
-		query.select(root).orderBy(builder.desc(root.get("employeeId")));
-		List<Employee> list = (List<Employee>) entityManager.createQuery(query).setFirstResult(0).setMaxResults(1)
-				.getResultList();
-		// 社員IDが 辞書順に並び替えて、最後にあるものを取得した。それがリストに１つ入ってるはず、リストに要素が一つも無かったら、まだ、全く登録されていないので
-		if (list.size() == 0) {
-			// まだ、ひとつも、employeeデータが登録されてなかったら、
-			generatedEmpId = "EMP0001"; // 一番最初になります。
-		} else {
-			Employee employee = list.get(0);
-			String getLastId = employee.getEmployeeId(); // 最後に登録されているId
-			// 文字列切り取りして、数値に変換して、 +1 する それをまた、文字列にフォーマットで変換する
-			generatedEmpId = String.format("EMP%04d", Integer.parseInt(getLastId.substring(3)) + 1);
-		}
-		return generatedEmpId;
-	}
-
-	
-	
-	// 手動で、社員IDを生成する リレーションをつけると、こっちでしかできない
-	// エンティティのリレーションを付けたので、こっちを使う、上のCriteria APIだとリレーションつけたら、エラーになるようになった。
 	public String generateEmpId() {
 		// まず、最後尾の社員IDをとってくる order by 辞書順で並べ替えて、desc をして limit 1
-		// employeeid カラムは、全てを小文字にすること postgreSQLだから テーブル名 カラム名 全て小文字
+		// createNativeQuery メソッドは、JPQLではなくて普通のSQL文です employeeid カラムは、全てを小文字にすること postgreSQLだから テーブル名 カラム名 全て小文字
 		Query query = entityManager
 				.createNativeQuery("select employeeid from employee order by employeeid desc limit 1");
-		// 戻り値は、型のないObjectになるので、キャストすること
-		String lastStringEmpId = (String) query.getSingleResult();
+		String lastStringEmpId = (String) query.getSingleResult();// 戻り値は、型のないObjectになるので、キャストする
 		int plusOne = Integer.parseInt(lastStringEmpId.substring(3)) + 1;
 		String getGeneratedEmpId = String.format("EMP%04d", plusOne);
 		return getGeneratedEmpId;
 	}
 
-	// こっちを使う
+	/**
+	 * 社員新規登録
+	 * @param employee
+	 * @return true 成功<br>false 失敗
+	 */
 	public boolean empAdd(Employee employee) {
 		Query query = entityManager.createNativeQuery(
 				"insert into employee (employeeid, name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) values (?,?,?,?,?,?,?,?,?,?,?)");
@@ -183,7 +178,7 @@ public class EmployeeService {  // リレーションの従テーブル
 		// TemporalType.DATE：java.sql.Dataと同じです。TemporalType.TIME：java.sql.Timeと同じです。
 		// TemporalType.TIMESTAMP：java.sql.Timestampと同じです。
 		// 入社日は、必ず入力してもらってるので、nullではない
-		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
+		query.setParameter(10, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);   // TemporalType.DATE は java.sql.Dataで登録するという意味
 
 		// 退職日は、null回避しないといけない
 		java.util.Date utilRetireDate = employee.getRetirementDate(); // 未入力のとき null 入ってる
@@ -202,7 +197,11 @@ public class EmployeeService {  // リレーションの従テーブル
 		return true;
 	}
 
-	// エラーメッセージを取得する 全部を
+	/**
+	 * エラーメッセージを取得する 全部.使ってはいない
+	 * @param result
+	 * @return errorMessages
+	 */
 	public String addAllErrors(BindingResult result) {
 		String errorMessages = "";
 		for (ObjectError error : result.getAllErrors()) {
@@ -212,7 +211,12 @@ public class EmployeeService {  // リレーションの従テーブル
 		return errorMessages;
 	}
 
-	// アノテーションなしに行ったすべてのエラーをBindingResultに追加する。
+	/**
+	 * アノテーションなしに行ったすべてのエラーをBindingResultに追加する.使ってはいない
+	 * @param bindingResult
+	 * @param errorMap
+	 * @return true 成功<br>false 失敗
+	 */
 	public static BindingResult addAllErrors(BindingResult bindingResult, Map<String, String> errorMap) {
 		for (Map.Entry<String, String> entry : errorMap.entrySet()) {
 			FieldError fieldError = new FieldError(bindingResult.getObjectName(), entry.getKey(), entry.getValue());
@@ -221,7 +225,11 @@ public class EmployeeService {  // リレーションの従テーブル
 		return bindingResult;
 	}
 
-	// 更新
+	/**
+	 * 社員更新
+	 * @param employee
+	 * @return true 成功<br>false 失敗
+	 */
 	public boolean empUpdate(Employee employee) {
 		Query query = entityManager.createNativeQuery(
 				"update employee set (name, age, gender, photoid, zipnumber, pref, address, departmentid, hiredate, retirementdate) = (?,?,?,?,?,?,?,?,?,?) where employeeid = ? ");
@@ -233,8 +241,12 @@ public class EmployeeService {  // リレーションの従テーブル
 		query.setParameter(6, employee.getPref());
 		query.setParameter(7, employee.getAddress());
 		query.setParameter(8, employee.getDepartmentId());
+		// データベースに保存する時には、java.util.Date から java.sql.Date に変換すること 入社日は、nullは無いので変換でエラーが出ない
 		// データベースに保存する時には、java.util.Date から java.sql.Date に変換すること
-		query.setParameter(9, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE);
+		// データベース型に対応するTemporalType列挙型に設定する属性です。指定できる値は，次の3種類です。
+		// TemporalType.DATE：java.sql.Dataと同じです。TemporalType.TIME：java.sql.Timeと同じです。
+		// TemporalType.TIMESTAMP：java.sql.Timestampと同じです。
+		query.setParameter(9, new java.sql.Date(employee.getHireDate().getTime()), TemporalType.DATE); // TemporalType.DATE は java.sql.Dataで登録するという意味
 
 		// 退職日は、null回避しないといけない
 		java.util.Date utilRetireDate = employee.getRetirementDate(); // 未入力のとき null 入ってる
@@ -243,7 +255,7 @@ public class EmployeeService {  // リレーションの従テーブル
 			long retireLong = utilRetireDate.getTime(); // nullの時に変換しようとするとエラーここで発生するので
 			sqlRetireDate = new java.sql.Date(retireLong);
 		}
-		query.setParameter(10, sqlRetireDate, TemporalType.DATE);
+		query.setParameter(10, sqlRetireDate, TemporalType.DATE);  //  TemporalType.DATE は java.sql.Dataで登録するという意味
 
 		query.setParameter(11, employee.getEmployeeId());
 
@@ -254,7 +266,11 @@ public class EmployeeService {  // リレーションの従テーブル
 		return true;
 	}
 
-	// 削除
+	/**
+	 * 社員削除
+	 * @param employeeId
+	 * @return true 成功<br>false 失敗
+	 */
 	public boolean deleteEmployee(String employeeId) {
 		Query query = entityManager.createNativeQuery("delete from employee where employeeid = ?");
 		query.setParameter(1, employeeId);
@@ -265,10 +281,16 @@ public class EmployeeService {  // リレーションの従テーブル
 		return true;
 	}
 
-	// 検索
+	/**
+	 * 社員検索
+	 * @param departmentId
+	 * @param employeeId
+	 * @param word
+	 * @return List
+	 */
 	@SuppressWarnings("unchecked")
 	public List<Employee> find(String departmentId, String employeeId, String word) {
-		// 注意 引数のdepartmentId 空文字とnullの可能ある employeeId word ""空文字の可能性ある
+		// 注意 引数のdepartmentId は 空文字とnullの可能ある   employeeId と word は ""空文字の可能性ある
 
 		String sql = "select * from employee";
 		String where = ""; // where句
