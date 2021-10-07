@@ -27,8 +27,10 @@ public @interface DayCheck {
 	  // つけたし相関チェック  @Targetに、「TYPE」を指定します  相関チェックの場合は項目にアノテーションはつけられません
 	  // 単一の項目と違い、相関チェックの場合は項目にアノテーションをつけることができません。ひとつしか、項目がとれませんから
 
-// だから、アノテーションをFormクラスにつける必要があり、そのためには@TargetはTYPEにしないといけないわけです。
-	  // あと、単項目と違ってアノテーションが受け取るオブジェクトがFormクラスそのものになるので、実装クラスではFormクラス内の各項目を参照することになります。 
+	  // だから、アノテーションをFormクラスにつける必要があり、そのためには@TargetはTYPEにしないといけないわけです。
+	  // あと、単項目と違ってアノテーションが受け取るオブジェクトがFormクラスそのものになるので、実装クラスではFormクラス内の各項目を参照することになります。
+	  // Formクラスの宣言の上に  @DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")  をつけてください
+	  
 	  // インタフェースにその項目を取得するためのメソッド定義だけしておく
 	  String hireDateProperty();
       String retirementDateProperty();

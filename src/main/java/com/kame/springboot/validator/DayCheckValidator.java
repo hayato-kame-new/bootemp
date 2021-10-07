@@ -10,13 +10,16 @@ import org.springframework.beans.BeanWrapperImpl;
 
 import com.kame.springboot.annotation.DayCheck;
 
-// Employeeを<>に書かないで 汎用的にするには Objectにする
-
-// ConstraintValidatorの<>の中には、カンマ前には上で作成したアノテーションを、後にはアノテーションを付与する（チェックを行う）エンティティクラスを指定。
-// 2つのパラメータ 日付のパラメータの比較を行う バリデータクラス
+/**
+ * 日付のパラメータの比較を行うバリデータクラス.2つのパラメータをとる 相関チェック.
+ * ConstraintValidatorの<>の中には、<アノテーションクラス, アノテーションを付与する（チェックを行う）エンティティクラス> を指定する.
+ * ConstraintValidator<DayCheck, Object>  にする.Employeeを<>に書かないで 汎用的にするには Objectにする.
+ * @author skame
+ *
+ */
 public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> {
 
-	// フィールド     アノテーションクラスのメソッドと、名前を合わせたフィールド名にする
+	// フィールド     アノテーションクラスのメソッドと、名前を合わせたフィールド名にするといい
 	String hireDateProperty; // 入力された値 日付文字列
     String retirementDateProperty;  // 入力された値 日付文字列
     String message;
@@ -30,7 +33,6 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 		this.hireDateProperty = constraintAnnotation.hireDateProperty();
 		this.retirementDateProperty = constraintAnnotation.retirementDateProperty();
 		this.message = constraintAnnotation.message();
-		
 	}
 
 	/**
@@ -41,9 +43,9 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 	public boolean isValid(Object value, ConstraintValidatorContext context) {
 		
 		// valueは、フォームのオブジェクト Formクラスのオブジェクト
-		 boolean ret = true;
+		 boolean result = true;
 	      if( value == null){ 
-	             ret = true;
+	             result = true; // ここでメソッドの終了 呼び出しもとへtrueを返す
 	      }else{
 	    	  // フォームクラスから比較対象項目の値を得る SpringのBeanWrapperというインタフェースを使います
 	    	  BeanWrapper beanWrapper = new BeanWrapperImpl(value);
@@ -57,17 +59,17 @@ public class DayCheckValidator implements ConstraintValidator<DayCheck, Object> 
 
 	    	  // 退職日を前にしているので、退職日 >= 入社日  の時は、0以上の数値が返り、そうでないときはマイナス数値が返る	    	  
 	    	  if(date2.compareTo(date1) >= 0) { 
-	    		  ret = true;  // スルーする
+	    		  result = true;  // ここでメソッドの終了 引数をメソッドの呼び出しもとに返す returnキーワード      true を返せば、バリデーションエラーにならない
 	    	  } else {
 	    		  // エラーメッセージを出します。エラーメッセージを生成する
 	    		  //メッセージを設定する。エラーメッセージを返すときの手続き
 	    	        context.disableDefaultConstraintViolation();  // まず、デフォルトの制約違反情報をクリアします
 	    	        // 今回は退社日の下にエラーメッセージを表示したいので  addPropertyNode(retirementDateProperty) で、Formクラスの　退職日の名前をセットしてます
 	    	        context.buildConstraintViolationWithTemplate(message).addPropertyNode(this.retirementDateProperty).addConstraintViolation();
-	    		  ret = false;  // エラーメッセージを出す。
+	    		  result = false;  // エラーメッセージを出す。
 	    	  }
 	     }
-	      return ret;
+	      return result;
 		// 相関チェックのアノテーションは、Formクラスのクラス定義の部分に付与する  引数として項目名を渡す  各項目にはつけません
 		
 

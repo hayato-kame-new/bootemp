@@ -16,29 +16,26 @@ public class DepartmentNameValidator implements ConstraintValidator<UniqueDepNam
 	@Autowired
 	DepartmentService departmentService;
 
-	
 	@Override
 	public void initialize(UniqueDepName constraintAnnotation) {
-		// TODO 自動生成されたメソッド・スタブ
 		ConstraintValidator.super.initialize(constraintAnnotation);
 	}
 
 	
-	//NULLチェックを行い、NULLだった場合はtrueを返してください。それが決まりです。なぜなら、NULLチェックは@NotNullを併用して行うことになっているからです。
+	//NULLチェックを行い、NULLだった場合はtrueを返してください。それが決まりです。なぜなら、NULLチェックは@NotNullを併用して行うことになっているからです。Stringだと@NotEmptyだけど
 
-	// 引数は、部署名
+	// 引数は、部署名のフォームで入力した文字列
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
-		if(value == null || value.isEmpty()) {
+		if(value == null || value.isEmpty()) { //  nullチェックを前に書いて先に評価する それから""空文字チェックを評価すること
 			return false;
 		}
-		// return departmentService.findByDepName(value) == null;
-		List list = departmentService.findByDepName(value); // 空のリストだったら、存在してませんので true を返して、スルー
-		// リストに要素があったら、存在してるから、falseを返して、バリデーションエラーを発生させる
+		List list = departmentService.findByDepName(value); 
+		// リストに要素があったら、すでに存在している部署名と同じ名前で登録しようとしているので、falseを返して、バリデーションエラーを発生させる
 		if(list.size() == 0) {
-			return true;
+			return true;  //  空のリストだったら、存在してませんので true を返して、スルー
 		}
-		return false;
+		return false; // バリデーションエラーを出す
 	}
 
 }

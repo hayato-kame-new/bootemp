@@ -20,7 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.kame.springboot.model.Department;
 import com.kame.springboot.service.DepartmentService;
-// コントローラには @Transactional をつけないこと サービスクラスで @Transactionalをつけるから、つけたら、ネストされた状態になるので
+// コントローラには @Transactional をつけないこと サービスクラスで @Transactionalをつけるから、つけたら、ネストされた状態になるので ここのリクエストハンドラでtry-catchできなくなるので、つけないこと
 @Controller
 public class DepartmentController {
 	
@@ -28,12 +28,12 @@ public class DepartmentController {
 	// このサービスのフィールドに、DepartmentRepositoryインスタンスBeanが組み込まれてるので、このコントローラに、わざわざリポジトリのフィールドはいらない
 	@Autowired
 	DepartmentService departmentService;  // DAOのインスタンスを使わずに、サービスのインスタンスをBeanにして使う
-
 	
 	/**
-	 * 部署一覧表示画面
+	 * 部署一覧表示する
+	 * @param model
 	 * @param mav
-	 * @return
+	 * @return mav
 	 */
 	@RequestMapping(value = "/department", method = RequestMethod.GET)
 	public ModelAndView index(
@@ -65,7 +65,7 @@ public class DepartmentController {
 	 */
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.GET)
 	public ModelAndView depDisplay(
-			@RequestParam(name = "action") String action, // デフォルトだと、必須パラメータで、nullじゃいけないエラー発生 
+			@RequestParam(name = "action") String action, // 必須パラメータ(デフォルト)にしてる 渡ってこないとエラーになる リダイレクトしてくる時にも "action" は送られてくる必須
 			@RequestParam(name = "departmentId", required = false) String departmentId, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
 			@RequestParam(name = "departmentName", required = false) String departmentName, // hiddenフィールドから required = false とすると、任意パラメータとなり、nullでもよくなる
 			@ModelAttribute("formModel") Department department,
@@ -74,8 +74,16 @@ public class DepartmentController {
 		if(action.equals("depAdd")) { // 新規のとき
 			// "formModel"という変数を用意して、空のインスタンス(各フィールドには、各データ型の規定値が入ってる)のdepartmentインスタンスを送る。
 		} else if (action.equals("depEdit")) { // 編集のとき
+			
+			
+			
+			//  ここおかしくないか？？　そもそもdepartmentにはセットされてるからさ・・・
+			// @RequestParam(name = "departmentId", いらない？？
+			// @RequestParam(name = "departmentName", いらない？？
 			// department.setDepartmentId(departmentId); // これでもいい
-			// department.setDepartmentName(departmentName); // これでもいい			
+			// department.setDepartmentName(departmentName); // これでもいい
+			
+			
 			department = departmentService.getByDepartmentId(departmentId);
 			mav.addObject("formModel", department );  // この１行必要
 		}		
@@ -157,8 +165,10 @@ public class DepartmentController {
 					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
 				}
 				if(success == false) {  // 失敗
-					flashMsg = "部署を更新できませんでした";
-				}		
+					flashMsg = "部署データを更新できませんでした";
+				}
+				// 成功
+				flashMsg = "部署データを更新しました";
 				break; // switch文を抜ける
 			}
 			//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ

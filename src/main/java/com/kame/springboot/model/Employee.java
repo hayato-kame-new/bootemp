@@ -24,7 +24,7 @@ import com.kame.springboot.annotation.DayCheck;
 
 @Entity
 @Table(name = "employee")
-@DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")
+@DayCheck(hireDateProperty="hireDate", retirementDateProperty="retirementDate", message = "退社日は、入社日の後の日付にしてください")  // 相関チェック
 public class Employee {
 	
 	@Id
