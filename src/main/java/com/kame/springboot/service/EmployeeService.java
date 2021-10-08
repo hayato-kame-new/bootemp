@@ -23,7 +23,7 @@ import com.kame.springboot.model.Employee;
 import com.kame.springboot.repositories.EmployeeRepository;
 
 @Service
-@Transactional
+@Transactional //  クラスに対して記述した設定はメソッドで記述された設定で上書きされる このクラスで @Transactionalをつけて、コントローラにはつけない
 public class EmployeeService {  // リレーションの従テーブル 
 
 	@Autowired

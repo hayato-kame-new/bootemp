@@ -19,10 +19,15 @@ public class PhotoDisplayController {
 	@Autowired
 	PhotoService photoService;
 	
-	// nullの場合もあるので　required = false　をつけて、nullも受けつけるようにしておく
+	/**
+	 * 画像を表示する. 戻り値voidです.直接レスポンスを書き込む
+	 * 
+	 * @param photoId
+	 * @param response
+	 */
 	@RequestMapping(value = "/getImg", method = RequestMethod.GET)
 	public void getImg(
-			@RequestParam(name = "photoId")int photoId,
+			@RequestParam(name = "photoId")int photoId, // 必須パラメータ
 			HttpServletResponse response) {
 		// 新規作成の時には、 photoIdは、int型のデータ型の規定値で 0 が入ってきています.
 		// HttpServletResponse response を使って、戻り値を voidにすれば、直接レスポンスを書き込むことができる.
@@ -30,10 +35,10 @@ public class PhotoDisplayController {
 		// クエリー文字列で送られたものは リクエストハンドラで@RequestParamを使って取得することができます.
 		// 社員新規作成の時、photoId が 0 なので javax.persistence.NoResultException 発生します.
 		// photoId が 0 の時には、getPhotoDataメソッドを呼び出さないこと.
-		if (photoId != 0) { // 編集の時だけ、
+		if (photoId != 0) { // 編集の時だけ、表示する
 			byte[] photoData = photoService.getPhotoData(photoId); 
 			String mime = photoService.getMime(photoId); // コンテンツタイプの取得  "image/jpeg"  "image/png" など "タイプ/サブタイプ" という形
-			// photoIdが合っても、データベースでレコードを直接作ったものは、photoDataが nullで登録しているものもあるから
+			// photoIdが存在するが、データベースでレコードを直接作ったものは、photoDataが nullで登録しているものもあるから
 			if(photoData != null) { // 取得したものが null じゃなければ出力する
 				try {
 					ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
@@ -47,8 +52,6 @@ public class PhotoDisplayController {
 					e.printStackTrace();
 				} 
 			}
-		}		
-		
+		}				
 	}
-
 }

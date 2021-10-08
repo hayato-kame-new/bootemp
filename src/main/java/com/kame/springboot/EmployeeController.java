@@ -55,7 +55,7 @@ public class EmployeeController {
 
 
     /**
-	 * 社員一覧表示
+	 * 社員一覧表示.
 	 * 
 	 * @param mav
 	 * @return mav
@@ -102,7 +102,7 @@ public class EmployeeController {
 	}
 
 	/**
-	 * 新規登録・編集 画面表示
+	 * 新規登録・編集 画面表示.
 	 * 
 	 * @param action
 	 * @param employeeId
@@ -148,7 +148,7 @@ public class EmployeeController {
 	// spring.servlet.multipart.max-file-size=30MB
 	// spring.servlet.multipart.max-request-size=30MB
 	/**
-	 * 新規登録 編集する
+	 * 新規登録 編集する.
 	 * 
 	 * @param action
 	 * @param employeeId
@@ -300,7 +300,7 @@ public class EmployeeController {
 	}
 	
 	/**
-	 * 社員エンティティ削除
+	 * 社員エンティティ削除.
 	 * @param employeeId
 	 * @param redirectAttributes
 	 * @param mav

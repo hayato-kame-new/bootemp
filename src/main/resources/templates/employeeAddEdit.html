@@ -33,7 +33,7 @@ div {
 
 <p class="msg" th:if="${msg}" th:text="${msg}" ></p>
 <p class="msg" th:if="${flashMsg}" th:text="${flashMsg}" ></p>
-
+<a href="/employee" th:href="@{/employee}">社員一覧ページへ戻る</a><br />
 <hr/>
 	<h3 th:text="'社員' + (${action == 'add'} ? '新規作成' : '編集') + 'ページ'"></h3>
 

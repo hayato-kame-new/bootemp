@@ -28,7 +28,7 @@ div {
 </style>
 </head>
 <body>
-
+<a href="/" th:href="@{/}">トップページへ</a>
 <a href="/department" th:href="@{/department}">部署一覧ページへ</a><br />
 <th:block th:if="${#strings.equals(action, 'find') || #strings.equals(action, 'csv')}">
 	<a href="/employee" th:href="@{/employee}">社員一覧ページへ</a>
@@ -45,7 +45,6 @@ div {
 		<tr th:each="obj : ${employeeList}" th:object="${obj}">	
 			<td th:text="${obj[0]}"></td>
 			<td th:text="${obj[1]}"></td> 
-			
 			<td>
 				 <form method = "get" action = "/emp_add_edit" >
 				 	<input type="hidden" name="employeeId" th:value="${obj[0]}" >
