@@ -28,7 +28,7 @@ import com.kame.springboot.model.Employee;
 import com.kame.springboot.service.DepartmentService;
 import com.kame.springboot.service.EmployeeService;
 import com.kame.springboot.service.PhotoService;
-// コントローラでは、サービスクラスを利用するので、 サービスのクラスの方に@Transactionalアノテーションをつけて、コントローラにはつけない
+// コントローラでは、@Transactionalつけないこと. サービスクラスを利用するので、 サービスのクラスの方に@Transactionalアノテーションをつけて、コントローラのリクエストハンドラでtry-catchするため.
 @Controller // コンポーネントです  
 public class EmployeeController { 
 
@@ -66,19 +66,22 @@ public class EmployeeController {
 			Model model, // Flash Scopeから値の取り出しに必要
 			ModelAndView mav) {
 		String title = "index";
-		// 削除後や検索後やCSV出力後など、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を
+		// 削除後 検索後 CSV出力後 など、リダイレクトしてくる  フラッシュメッセージ Flash Scopeから値の取り出し Model model を引数に書いて、 modelインスタンスのgetAttribute(キー）で値を取得
 		String flashMsg = "";
-		if (model.getAttribute("flashMsg") != null){
+		if (model.getAttribute("flashMsg") != null){  // 最初の画面一覧を表示するとき、model.getAttribute("flashMsg") は null なので			
 			flashMsg = (String) model.getAttribute("flashMsg");// 返り値がObject型なので、キャストすること
 		}
 		// Flash Scopeから取り出すには、Modelインスタンスの getAttributeメソッドを使う
-		String action = (String) model.getAttribute("action"); // Flash Scopeから取り出す
+
+		// 一番最初に 一覧表示する時に null が入ってる
+		String action = (String) model.getAttribute("action"); // Flash Scopeから取り出す			
+		
 		List<Employee> employeeList = new ArrayList<Employee>();
 		// 社員一覧を表示する時
 		if (action == null) {
 			employeeList = employeeService.getEmpListOrderByAsc(); // 一覧を辞書順で、昇順で取得する
 		}
-		// 検索結果を出した後に、リダイレクトしてきた時
+		// 検索結果を出した後 リダイレクトしてきた時
 		if(action != null && action.equals("find")) {  // 先に action != null を書いてnullチェックすること
 			employeeList = (List<Employee>) model.getAttribute("employeeList"); // 検索結果をFlash Scopeから取り出す
 			title = "find result";
@@ -127,18 +130,20 @@ public class EmployeeController {
 				
 		switch (action) {
 		case "add":
-			// 新規だと、空のEmployeeインスタンスが用意されている、各フィールドには、各データ型の規定値が入ってるので このままbreak; で
-			break;// switch文を抜ける
+			// 新規だと、@ModelAttributeによって 用意されたemployee変数には すでに空のEmployeeインスタンスが用意されている(各フィールドには、各データ型の規定値が入ってる)ので このままbreak; で
+			break; // switch文を抜ける
 		case "edit":
-			Employee findEmployee = employeeService.getEmp(employeeId);  // 編集だと、employeeIdの値が hiddenで送られてくる
-			mav.addObject("formModel", findEmployee);  // 更新の時の この１行必要
-			break;
+			// 編集のときは、@ModelAttributeによって 用意されたemployee変数(各フィールドが規定値)を上書きしてから、addObjectでセットする
+			 employee = employeeService.getEmp(employeeId);  // 編集だと、employeeIdの値が hiddenで送られてくる
+			break; // switch文を抜ける
 		}
+		mav.addObject("formModel", employee);
 		return mav;
 	}
 
 	
-	// SpringBootでは、デフォルトでファイルサイズの上限が1MB(1024*1024=1048576bytes)となっています。アップロードしたファイルのサイズがこれより大きい場合、MaxUploadSizeExceededExceptionがスローされ、リクエストは処理されません。
+	// SpringBootでは、デフォルトでファイルサイズの上限が1MB(1024*1024=1048576bytes)となっています。
+	// アップロードしたファイルのサイズがこれより大きい場合、MaxUploadSizeExceededExceptionがスローされ、リクエストは処理されません。
 	// propertiesファイルの場合 以下の２行を加えてください。
 	// spring.servlet.multipart.max-file-size=30MB
 	// spring.servlet.multipart.max-request-size=30MB
@@ -205,23 +210,23 @@ public class EmployeeController {
 
 			switch (action) {
 			case "add":
-				// 新規では、ファイルのアップロードをしてくる必須にしてる
+				// 新規では、ファイルのアップロードを必須にしてる
 				// photoテーブルを新規に登録する主キーのカラムのphotoid は自動採番する  成功すればtrue 失敗するとfalse が返る
 				success = photoService.photoDataAdd(photoData, mime);
 				if (!success) { // falseが返ったら、失敗
 					msg = "写真データの新規登録に失敗しました。"; // 結果ページへの出力のため
 					title = "失敗"; // 結果ページへの出力のため
-					break; // case句を抜ける
+					break; // switch文を抜ける
 				} else { // tureが返ったら、成功   次はemployeeテーブルに新規作成をする
 					// さっきphotoテーブルに登録した一番最後のphotoIdを取得して、 それをemployeeインスタンスのphotoIdの値に更新する
 					int lastPhotoId = photoService.getLastPhotoId(); // 戻り値  データベースに登録されてる一番最後のphotoId(int型)が返る
 					// まず、新規登録用に、社員IDを生成します。
 					String generatedEmpId = employeeService.generateEmpId(); // 社員IDを生成
-					// employee は、フォームからの値がセットされてるので、そのemployeeを更新する
-					// セッターを使い、フィールドに代入する(規定値から上書きする)
+					// employee は、フォームからの値がセットされてるので、そのemployeeを更新する.その前に employeeのフィールドを上書きして更新する
+					// セッターを使い、employeeIdフィールドに代入する(規定値null から上書きする)
 					employee.setEmployeeId(generatedEmpId); // フォームから送られてきた時点ではemployeeIdの値は 規定値(String型の初期値)の null
 															// になってるので、生成したIDで上書きする
-					// セッターを使い、フィールドに代入する(規定値から上書きする)
+					// セッターを使い、photoIdフィールドに代入する(規定値 0 から上書きする)
 					employee.setPhotoId(lastPhotoId); // フォームから送られてきた時点ではphotoIdの値は 規定値(int型の初期値)の 0
 														// になってるので、さっきphotoテーブルに新規登録した際に、自動生成されたphotoIdを  photoService.getLastPhotoId() によって取得してきたので、それで上書きする
 					// 更新したemployeeを employeeテーブルに新規登録する
@@ -229,12 +234,12 @@ public class EmployeeController {
 					if (!success) { // 失敗
 						msg = "社員データの新規登録に失敗しました。"; // 結果ページへの出力のため
 						title = "失敗"; // 結果ページへの出力のため
-						break; // case句を抜ける
+						break; // switch文を抜ける
 					}
 					msg = "社員データを新規登録しました。";
 					title = "成功";
 				}
-				break; // case句を抜ける
+				break; // switch文を抜ける
 			case "edit":
 				// 編集では、ファイルのアップロードは無いかもしれない。なくてもOKにしてる
 				// もし、ファイルアップロードあれば、編集では、employee.getPhotoId() で、photoId を取得できるので、上書きする photoテーブルの更新
@@ -243,20 +248,20 @@ public class EmployeeController {
 					if(!success) {
 						msg = "写真データの更新に失敗しました。";
 						title = "失敗";
-						break; // case句を出る
+						break; // switch文を抜ける
 					}
-					// アップロードがあり、photoテーブルの更新が成功  
+					// ここにきたらアップロードがあり、photoテーブルの更新が成功してる  
 				}
-				//フォームから送られてきた、employeeには、更新したデータがセットされてる employeeテーブルの更新 
+				//@ModelAttributeによって  employee変数は すでにフォームから送られてきたデータがセットされてる   employeeテーブルの更新 
 				success = employeeService.empUpdate(employee); 
 				if(!success) {
 					msg = "社員データの更新に失敗しました。";
 					title = "失敗";
-					break;// case句を出る
+					break;// switch文を抜ける
 				}
 				msg = "社員データを更新しました。";
 				title = "成功";
-				break; // editのcase句を出る
+				break; // switch文を抜ける
 			}
 
 			mav.setViewName("result");

@@ -62,7 +62,7 @@ public class DepartmentController {
 	 */
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.GET)
 	public ModelAndView depDisplay(
-			@RequestParam(name = "action") String action, // 必須パラメータ(デフォルト)にしてる 渡ってこないとエラーになる リダイレクトしてくる時にも "action" は送られてくる必須
+			@RequestParam(name = "action") String action, // 必須パラメータ(デフォルト) 渡ってこないとエラーになる リダイレクトしてくる時にも "action" は送られてくる必須
 			@ModelAttribute("formModel") Department department,
 			ModelAndView mav) {
 		
@@ -91,8 +91,8 @@ public class DepartmentController {
 	 * @return mav
 	 */
 	@RequestMapping(value = "/dep_add_edit", method = RequestMethod.POST)
-	public ModelAndView depAddUpdate(  //   このリクエストハンドラ及びコントローラには、@Transactional つけないこと このリクエストハンドラ内で、エラーをキャッチして処理したいから @Transactionalは、サービスクラスのメソッドについています.
-			@RequestParam(name = "action") String action,  // 必須パラメータにしてる
+	public ModelAndView depAddUpdate(  //   このリクエストハンドラ内で、エラーをキャッチして処理したいから、@Transactional つけないこと. @Transactionalは、サービスクラスのメソッドについています.
+			@RequestParam(name = "action") String action,  // 必須パラメータ
 			@ModelAttribute("formModel")@Validated Department department,
 			BindingResult result,
 			RedirectAttributes redirectAttributes,
@@ -113,9 +113,9 @@ public class DepartmentController {
 				// 新規登録をするために、 プライマリーキーで文字列の部署IDは、自分で作成する
 				String resultGeneratedId = departmentService.generatedId();
 				// 新規登録のときは @ModelAttributeによって規定値(各フィールドのデータ型のデフォルト値)が入ってるdepartmentインスタンスが用意されているので 
-				// セッターを使って、null(参照型のデフォルト値)を departmentIdフィールドの値を 上書きします
+				// セッターを使って、null(参照型のデフォルト値)を departmentIdフィールドの値を 上書きする
 				department.setDepartmentId(resultGeneratedId);
-
+				// createメソッドに @Transactional(readOnly = false, rollbackFor = Exception.class) をつけてる このリクエストハンドラでtry-catchするために、このリクエストハンドラでは、@Transactionalをつけてはいけない
 				try {
 					success = departmentService.create(department);
 				} catch (DataIntegrityViolationException | ConstraintViolationException | PersistenceException e) {
@@ -131,22 +131,18 @@ public class DepartmentController {
 					flashMsg = "新規部署は作成できませんでした";
 				}				
 				break; // switch文を抜ける			
-			case "depEdit": // 編集の時には、必ずdepartmentIdの値が入ってるnullじゃない
-				// 変更したインスタンスをデータベースに保存する。サービスのメソッドを呼び出す
-				
-				
-				
+			case "depEdit": 				
 				try {
-					//  savedDepartment = departmentService.saveAndFlushDepartmentData(department); //  saveAndFlushDepartmentDataに @Transactional(readOnly=false , rollbackFor=Exception.class )  Exception.class にすることで、実行時例外もキャッチして、ロールバックできる						
+					//  updateメソッドに  @Transactional(readOnly=false , rollbackFor=Exception.class ) をつけてる Exception.class にすることで、実行時例外もキャッチして、ロールバックできる. このリクエストハンドラでtry-catchするために、このリクエストハンドラでは、@Transactionalをつけてはいけない					
 					success = departmentService.update(department);
-				} catch (DataIntegrityViolationException | ConstraintViolationException | PersistenceException e) {  // 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
-					// キャッチ
+				} catch (DataIntegrityViolationException | ConstraintViolationException | PersistenceException e) {  
+					// 自作のアノテーション@UniqueDepNameを使わない時に、エラー処理で対処する。
 					mav.setViewName("departmentAddEdit");
 					mav.addObject("msg", "部署名はユニークです。同じ名前で登録できません。");
 					mav.addObject("formModel", department);
 					mav.addObject("action", action);
 					resMav = mav;
-					return resMav;	// ここですぐにreturnします。	以降の行は実行されません。			
+					return resMav;	// ここですぐにreturnします.メソッドの終了 引数を呼び出しもとへ返してメソッドの終了.以降の行は実行されません。			
 				}
 				if(success == false) {  // 失敗
 					flashMsg = "部署データを更新できませんでした";
@@ -170,30 +166,18 @@ public class DepartmentController {
 	}
 	
 	/**
-	 * 削除する
-	 * サービスのメソッドを使って、hiddenタグで渡ってきたdepartmentIdを下にして、該当するエンティティを取得する
-	 * 
-	 * departmentId　なので、 idじゃないので、リポジトリのメソッド自動生成機能は使えない idだったら下のメソッド使える
-	 * Optional<Department> optionalObject = departmentService.findByIdDepartmentData(departmentId);
-	 * データベースから削除する  サービスのメソッドを呼び出す 戻り値はない
-	 * 引数を idにした  こっちを使ってもいいし、
-	 * departmentService.deleteByIdDepartmentData(departmentId);
-	 *
-	 * 今回は、使えないが、リポジトリの機能の自動生成の deleteByIdメソッドの引数は、idの他、オブジェクトを引数にして、削除してもいい
-	 * ラッパークラスのOptionalから インスタンスメソッドのget() を呼び出すと、ラップしたインスタンスが取得できます。
-	 * departmentService.deleteByEntityObject(optionalObject.get());
-	 * 
-	 * 
-	 * ここでは　@Transactional  つけないでください
+	 * 部署を削除する
+	 * このリクエストハンドラでは@Transactional  つけないでくださいtry-catchするので
 	 * @param action
 	 * @param departmentId
+	 * @param redirectAttributes
 	 * @param mav
-	 * @return mav
+	 * @return
 	 */
 	@RequestMapping(value = "/dep_delete", method = RequestMethod.POST)
 	public ModelAndView depDelete(
-			@RequestParam(name = "action") String action,  // 必須パラメータにしてる
-			@RequestParam(name = "departmentId")String departmentId,  // 必須パラメータにしてる
+			@RequestParam(name = "action") String action,  // 必須パラメータ
+			@RequestParam(name = "departmentId")String departmentId,  // 必須パラメータ
 			RedirectAttributes redirectAttributes,
 			ModelAndView mav) {
 		
@@ -207,12 +191,10 @@ public class DepartmentController {
 		} catch (PersistenceException | ConstraintViolationException e) { // 問題が発生したときに永続化プロバイダーによってスローされます
 			flashMsg = "削除しようとした部署には、所属している社員がいるので、削除できませんでした。";
 			result = false;
-		}
-		
+		}		
+		//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
+		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);		
 		// Flash Scopeに保存して、リダイレクトする
-	//  Flash Scop へ、インスタンスをセットできます。 Flash Scopは、１回のリダイレクトで有効なスコープです。 Request Scope より長く、Session Scope より短いイメージ
-		redirectAttributes.addFlashAttribute("flashMsg", flashMsg);
-		
 		return new ModelAndView("redirect:/department");
 	}
 }
