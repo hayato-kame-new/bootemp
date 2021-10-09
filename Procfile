@@ -1,2 +1,1 @@
-web java $JAVA_OPTS -jar target/*.war --server.port=$PORT
-
+web: java -Dserver.port=$PORT -jar target/bootemp-0.0.1-SNAPSHOT.jar
