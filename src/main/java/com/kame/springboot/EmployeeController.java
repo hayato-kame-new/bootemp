@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NoResultException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,7 @@ public class EmployeeController {
 	/**
 	 * 新規登録・編集 画面表示.
 	 * 
+	 * 
 	 * @param action
 	 * @param employeeId
 	 * @param employee
@@ -149,7 +151,7 @@ public class EmployeeController {
 	// spring.servlet.multipart.max-request-size=30MB
 	/**
 	 * 新規登録 編集する.
-	 * 
+	 * このメソッド内で try-catchしたいので、@Transactional をつけないでください
 	 * @param action
 	 * @param employeeId
 	 * @param multipartFile
@@ -159,7 +161,6 @@ public class EmployeeController {
 	 * @return mav
 	 */
 	@RequestMapping(value = "emp_add_edit", method = RequestMethod.POST)
-	@Transactional(readOnly=false)
 	public ModelAndView empAddUpdate(@RequestParam(name = "action") String action,
 			@RequestParam(name = "employeeId", required = false) String employeeId,
 		    @RequestParam(name = "upload_file", required = false) MultipartFile multipartFile,
@@ -221,8 +222,14 @@ public class EmployeeController {
 					// さっきphotoテーブルに登録した一番最後のphotoIdを取得して、 それをemployeeインスタンスのphotoIdの値に更新する
 					int lastPhotoId = photoService.getLastPhotoId(); // 戻り値  データベースに登録されてる一番最後のphotoId(int型)が返る
 					// まず、新規登録用に、社員IDを生成します。
-					String generatedEmpId = employeeService.generateEmpId(); // 社員IDを生成
-					// employee は、フォームからの値がセットされてるので、そのemployeeを更新する.その前に employeeのフィールドを上書きして更新する
+					String generatedEmpId = "";
+					try {
+						 generatedEmpId = employeeService.generateEmpId(); // 社員IDを生成
+						
+					} catch (NoResultException e) {
+						generatedEmpId = "EMP0001";  
+					}
+										// employee は、フォームからの値がセットされてるので、そのemployeeを更新する.その前に employeeのフィールドを上書きして更新する
 					// セッターを使い、employeeIdフィールドに代入する(規定値null から上書きする)
 					employee.setEmployeeId(generatedEmpId); // フォームから送られてきた時点ではemployeeIdの値は 規定値(String型の初期値)の null
 															// になってるので、生成したIDで上書きする

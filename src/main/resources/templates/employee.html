@@ -60,12 +60,12 @@ div {
 			</td>
 		</tr> 
 	</table>
+</th:block>
 	
 	<!-- aリンクは、HTTPメソッドではGET URLパスの末尾?以降がクエリーパラメータとしてコントローラの対応するリクエストハンドラに送られる -->
 	<div>
 	<a href="/emp_add_edit?action=add" th:href="@{/emp_add_edit(action = 'add')}"><button type="button" th:text="新規追加"></button> </a>
 	</div>
-</th:block>
 <div>
 <a href="/find" th:href="@{/find}"><button type="button" th:text="検索..." ></button></a>
 </div>
